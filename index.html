@@ -4,7 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>剑网3名望时间管理大师 | JX3 Celebrity Timetable</title>
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome：优先用本地 fontawesome/ 目录，没有就自动回退到 CDN -->
+    <link rel="stylesheet" href="fontawesome/css/all.min.css" id="fa-local">
+    <script>
+    (function () {
+        var CDN = 'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        var switched = false;
+        function useCdn() {
+            if (switched) return;
+            switched = true;
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = CDN;
+            document.head.appendChild(l);
+        }
+        // 本地 CSS 加载失败（404）时立刻回退
+        var local = document.getElementById('fa-local');
+        if (local) local.addEventListener('error', useCdn);
+        // 双保险：CSS 存在但字体文件缺失时，图标渲染不出来，也要回退
+        window.addEventListener('load', function () {
+            if (switched) return;
+            var probe = document.createElement('i');
+            probe.className = 'fas fa-square';
+            probe.style.cssText = 'position:fixed;left:-9999px;top:0;font-size:40px;line-height:1;visibility:hidden';
+            document.body.appendChild(probe);
+            var w = probe.getBoundingClientRect().width;
+            probe.parentNode.removeChild(probe);
+            if (!(w > 24)) useCdn();
+        });
+    })();
+    </script>
     <style>
         /* ========== CSS Variables ========== */
         :root {

@@ -29,15 +29,16 @@
 ## 文件结构
 
 ```
-jx3mwtime/
-├── index.html          # 主程序
+jx3-renown-timetable/
+├── index.html                          # 主程序
 ├── JX3_Celebrity_Timetable_v1.1.3.html # 当前发布副本
-├── JX3_Celebrity_Timetable_v1.1.2.html # 兼容副本
-├── index-v1.0.9.html    # 旧版本备份
-├── CHANGELOG.md         # 更新日志（详细版）
-├── RELEASE.md           # 更新日志（简洁版）
-└── README.md            # 本文件
+├── CHANGELOG.md                        # 更新日志（详细版）
+├── RELEASE.md                          # 更新日志（简洁版）
+├── LICENSE-FontAwesome.txt             # Font Awesome Free 许可证
+└── README.md                           # 本文件
 ```
+
+> 更早的版本（v1.0.9、v1.1.2）已删除，需要时从 Git 历史里取。
 
 ## 数据来源
 
@@ -48,8 +49,22 @@ jx3mwtime/
 ## 技术栈
 
 - HTML + CSS + JavaScript（纯前端，零框架依赖）
-- Font Awesome 6.4.0（CDN 图标库）
+- Font Awesome 6.4.0（本地 `fontawesome/` 优先，缺失时自动回退 CDN）
 - localStorage 缓存 + 偏好持久化
+
+## 图标本地化
+
+默认走 CDN，联网即可用。想让图标也离线可用：
+
+1. 下载 Font Awesome 6.4.0 Free
+2. 把 `css/` 和 `webfonts/` 两个目录放进项目根目录，命名成 `fontawesome/`
+3. 最终结构是 `fontawesome/css/all.min.css` 和 `fontawesome/webfonts/*.woff2`
+4. 刷新页面即可 —— 代码会自动优先用本地文件，检测不到才回退 CDN
+
+## 许可证
+
+- 项目代码：未指定开源协议
+- 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
 
@@ -63,7 +78,7 @@ jx3mwtime/
 - 优化代码结构，提升渲染性能
 - 修复自定义时间面板样式问题
 - 修复筛选按钮状态同步问题
-- Font Awesome 切换本地引用
+- Font Awesome 改为本地优先、CDN 回退
 
 ---
 
