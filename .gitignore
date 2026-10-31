@@ -1,0 +1,11 @@
+# Font Awesome 元数据（项目走 CDN，本地不需要）
+metadata/
+
+# AI 协作快照
+.alma-snapshots/
+.agents/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
