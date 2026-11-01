@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>剑网3名望时间管理大师 | JX3 Celebrity Timetable</title>
+    <title>剑网3名望时间管理大师 | jx3-renown-timetable</title>
     <!-- Font Awesome：优先用本地 fontawesome/ 目录，没有就自动回退到 CDN -->
     <link rel="stylesheet" href="fontawesome/css/all.min.css" id="fa-local">
     <script>
@@ -18,10 +18,8 @@
             l.href = CDN;
             document.head.appendChild(l);
         }
-        // 本地 CSS 加载失败（404）时立刻回退
         var local = document.getElementById('fa-local');
         if (local) local.addEventListener('error', useCdn);
-        // 双保险：CSS 存在但字体文件缺失时，图标渲染不出来，也要回退
         window.addEventListener('load', function () {
             if (switched) return;
             var probe = document.createElement('i');
@@ -35,89 +33,268 @@
     })();
     </script>
     <style>
-        /* ========== CSS Variables ========== */
+        /* ========== 与 jx3-loot-forge 统一的配色与主题变量 ========== */
         :root {
-            --bg-deep: #09090f;
-            --bg-surface: #111118;
-            --bg-elevated: #181825;
-            --glass: rgba(255, 255, 255, 0.06);
-            --glass-hover: rgba(255, 255, 255, 0.09);
-            --border: rgba(255, 255, 255, 0.06);
-            --border-active: rgba(240, 192, 96, 0.3);
+            --bg: #09090f;
+            --surface: #111118;
+            --raised: #181825;
+            --panel: rgba(255, 255, 255, .055);
+            --panel-hover: rgba(255, 255, 255, .085);
+            --border: rgba(255, 255, 255, .075);
+            --border-active: rgba(240, 192, 96, 0.35);
             --text: #e4e4ef;
-            --text-dim: #828298;
-            --text-muted: #5a5a72;
+            --muted: #828298;
+            --weak: #5a5a72;
             --gold: #f0c060;
-            --gold-dim: rgba(240, 192, 96, 0.15);
-            --chutian: #5ec970;
-            --yuncong: #5ea3f0;
-            --pifeng: #b87fe0;
-            --qiongye: #f0a050;
-            --radius: 12px;
-            --radius-sm: 8px;
+            --gold-hover: #f5cc6e;
+            --gold-soft: color-mix(in srgb, var(--gold) 14%, transparent);
+            --blue: #66a9ee;
+            --blue-soft: rgba(102, 169, 238, .14);
+            --red: #f87171;
+            --red-soft: rgba(248, 113, 113, .14);
+            --green: #63d39a;
+            --green-soft: rgba(99, 211, 154, .14);
             --radius-xs: 6px;
-            --transition: 0.2s ease;
-            --font: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Courier New', monospace;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            --font-sans: "HarmonyOS Sans SC", "HarmonyOS Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "Cascadia Code", "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color-scheme: dark;
         }
 
-        /* ========== Reset & Base ========== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background: var(--bg-deep);
-            color: var(--text);
-            font-family: var(--font);
-            min-height: 100vh;
-            line-height: 1.6;
+        * { box-sizing: border-box; }
+        html {
+            background: var(--bg);
             -webkit-font-smoothing: antialiased;
-            background-image:
-                radial-gradient(ellipse 50% 40% at 15% 25%, rgba(240, 192, 96, 0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 50% at 75% 60%, rgba(94, 163, 240, 0.06) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 35% at 50% 85%, rgba(184, 127, 224, 0.05) 0%, transparent 60%);
-            background-attachment: fixed;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
         }
+        body {
+            margin: 0;
+            min-width: 320px;
+            background:
+                radial-gradient(circle at 8% 2%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 30%),
+                radial-gradient(circle at 91% 38%, rgba(94, 163, 240, .06), transparent 32%),
+                radial-gradient(circle at 52% 100%, rgba(184, 127, 224, .05), transparent 36%),
+                var(--bg);
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: var(--font-sans);
+            letter-spacing: -0.006em;
+            line-height: 1.5;
+        }
+        button, input, select, textarea { font: inherit; }
+        button { color: inherit; }
 
-        .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
-
-        /* ========== Header ========== */
-        header {
-            text-align: center;
-            margin-bottom: 28px;
-            padding: 32px 24px;
-            background: var(--glass);
+        .app-shell {
+            width: min(1400px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 24px 0 60px;
+        }
+        .glass-panel {
             border: 1px solid var(--border);
+            background: var(--panel);
             border-radius: var(--radius);
             backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            transition: var(--transition);
         }
-        header h1 {
-            color: var(--gold);
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-        header h1 i { font-size: 1.6rem; opacity: 0.85; }
-        header .subtitle {
-            color: var(--text-dim);
-            font-size: 0.95rem;
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
-        /* ========== Dashboard Layout ========== */
+        /* ========== Topbar 顶栏（对齐 jx3-loot-forge）========== */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1.5px solid color-mix(in srgb, var(--gold) 45%, transparent);
+            box-shadow: 0 0 16px color-mix(in srgb, var(--gold) 25%, transparent), 0 4px 12px rgba(0, 0, 0, .5);
+            transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .2s ease;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .brand-logo:hover {
+            transform: scale(1.08) rotate(2deg);
+            border-color: var(--gold);
+            box-shadow: 0 0 24px color-mix(in srgb, var(--gold) 55%, transparent), 0 6px 16px rgba(0, 0, 0, .6);
+        }
+        .brand-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .brand-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .brand-line h1 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .version-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--gold);
+            background: var(--gold-soft);
+            border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+            font-family: var(--font-mono);
+        }
+        .data-version-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: var(--blue);
+            background: var(--blue-soft);
+            border: 1px solid rgba(102, 169, 238, .35);
+        }
+        .brand-sub {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            flex-wrap: wrap;
+        }}
+        .brand-en {
+            font-family: var(--font-mono);
+            color: var(--gold);
+            font-weight: 500;
+        }
+        .brand-dot { color: var(--weak); }
+        .brand-author { color: var(--text); font-weight: 500; }
+        .brand-tagline { color: var(--weak); }
+
+        /* 头部右侧功能操作与切换器 */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .client-switcher {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .client-tab {
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.3;
+            user-select: none;
+        }
+        .client-tab:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .client-tab.active {
+            color: #17130b;
+            background: var(--gold);
+            font-weight: 700;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .button.ghost {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+        }
+        .button.ghost:hover {
+            background: var(--panel-hover);
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+        .button.primary {
+            border: 1px solid var(--gold);
+            background: var(--gold);
+            color: #17130b;
+            font-weight: 600;
+            box-shadow: 0 2px 10px color-mix(in srgb, var(--gold) 28%, transparent);
+        }
+        .button.primary:hover {
+            background: var(--gold-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--gold) 38%, transparent);
+        }
+
+        /* ========== 标签页容器切换 ========== */
+        .view-section {
+            display: none;
+            animation: fadeIn .2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .view-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== Tab 1: 名望时间表主布局 ========== */
         .dashboard {
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 310px minmax(0, 1fr);
             gap: 24px;
             align-items: start;
         }
-        @media (max-width: 1024px) {
+        @media (max-width: 960px) {
             .dashboard { grid-template-columns: 1fr; }
         }
-
-        /* ========== Sidebar ========== */
         .sidebar {
             display: flex;
             flex-direction: column;
@@ -126,17 +303,11 @@
             top: 24px;
         }
         .sidebar-card {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            backdrop-filter: blur(24px);
-            transition: border-color var(--transition);
+            padding: 18px 20px;
         }
-        .sidebar-card:hover { border-color: rgba(255,255,255,0.1); }
         .card-title {
             color: var(--gold);
-            font-size: 0.9rem;
+            font-size: 0.86rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
@@ -145,9 +316,6 @@
             align-items: center;
             gap: 8px;
         }
-        .card-title i { font-size: 0.85rem; opacity: 0.7; }
-
-        /* Filter */
         .filter-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -157,29 +325,38 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 14px;
-            border-radius: var(--radius-xs);
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--border);
+            color: var(--text);
             cursor: pointer;
-            transition: all var(--transition);
             font-size: 0.88rem;
+            transition: var(--transition);
             user-select: none;
         }
-        .filter-chip:hover { background: rgba(255,255,255,0.06); }
-        .filter-chip.active { background: var(--gold-dim); border-color: var(--border-active); }
+        .filter-chip:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .filter-chip.active {
+            background: var(--gold-soft);
+            border-color: var(--border-active);
+            color: var(--gold);
+            font-weight: 600;
+        }
         .filter-chip input { display: none; }
         .org-dot {
-            width: 10px; height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             flex-shrink: 0;
         }
-        .org-dot.chutian { background: var(--chutian); box-shadow: 0 0 6px rgba(94,201,112,0.5); }
-        .org-dot.yuncong { background: var(--yuncong); box-shadow: 0 0 6px rgba(94,163,240,0.5); }
-        .org-dot.pifeng { background: var(--pifeng); box-shadow: 0 0 6px rgba(184,127,224,0.5); }
-        .org-dot.qiongye { background: var(--qiongye); box-shadow: 0 0 6px rgba(240,160,80,0.5); }
+        .org-dot.chutian { background: #3ddc84; box-shadow: 0 0 8px rgba(61, 220, 132, 0.5); }
+        .org-dot.yuncong { background: #66a9ee; box-shadow: 0 0 8px rgba(102, 169, 238, 0.5); }
+        .org-dot.pifeng { background: #b06cff; box-shadow: 0 0 8px rgba(176, 108, 255, 0.5); }
+        .org-dot.qiongye { background: #f0c060; box-shadow: 0 0 8px rgba(240, 192, 96, 0.5); }
 
-        /* Time Range */
         .range-row {
             display: flex;
             align-items: center;
@@ -188,354 +365,878 @@
         .range-slider {
             flex: 1;
             -webkit-appearance: none;
-            height: 6px;
+            height: 5px;
             border-radius: 3px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             outline: none;
         }
         .range-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px; height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--gold);
+            box-shadow: 0 0 8px color-mix(in srgb, var(--gold) 40%, transparent);
             cursor: pointer;
-            box-shadow: 0 0 8px rgba(240,192,96,0.4);
-            transition: transform var(--transition);
+            transition: transform 0.15s ease;
         }
-        .range-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        .range-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
         .range-label {
             font-weight: 600;
             color: var(--gold);
             min-width: 55px;
             text-align: right;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
+            font-family: var(--font-mono);
         }
 
-        /* Custom Time */
         .custom-time-toggle {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 14px;
-            border-radius: var(--radius-xs);
-            background: rgba(255,255,255,0.04);
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.025);
             border: 1px solid var(--border);
             cursor: pointer;
-            transition: all var(--transition);
+            color: var(--text);
             font-size: 0.88rem;
-            user-select: none;
+            transition: var(--transition);
         }
-        .custom-time-toggle:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.1); }
-        .custom-time-toggle .chevron { transition: transform var(--transition); }
+        .custom-time-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .custom-time-toggle .chevron {
+            transition: transform 0.25s ease;
+            font-size: 11px;
+            color: var(--muted);
+        }
         .custom-time-toggle .chevron.open { transform: rotate(180deg); }
         .custom-time-body {
             overflow: hidden;
             max-height: 0;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .custom-time-body.open { max-height: 120px; }
-        .custom-time-body .inner { padding: 14px 20px 16px; display: flex; gap: 8px; }
+        .custom-time-body .inner {
+            padding: 14px 0 0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
         .custom-time-body input[type="time"] {
             flex: 1;
-            background: rgba(255,255,255,0.05);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border);
-            border-radius: var(--radius-xs);
-            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.35);
             color: var(--text);
             font-family: var(--font-mono);
             font-size: 0.9rem;
+            outline: none;
         }
-        .btn {
-            padding: 8px 16px;
-            border-radius: var(--radius-xs);
-            border: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all var(--transition);
-            white-space: nowrap;
+        .custom-time-body input[type="time"]:focus {
+            border-color: var(--gold);
         }
-        .btn-primary { background: var(--gold); color: #1a1a2e; }
-        .btn-primary:hover { background: #f5cc70; }
-        .btn-reset { background: rgba(244,67,54,0.2); color: #f87171; }
-        .btn-reset:hover { background: rgba(244,67,54,0.35); }
 
-        /* Status Bar */
         .status-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0;
-            font-size: 0.9rem;
+            padding: 7px 0;
+            font-size: 0.86rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.035);
         }
-        .status-row .label { color: var(--text-dim); }
-        .status-row .value { color: var(--text-dim); }
-        .status-row .value.highlight { color: var(--gold); }
+        .status-row:last-child { border-bottom: none; }
+        .status-row .label { color: var(--muted); }
+        .status-row .value {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+        .status-row .value.highlight {
+            color: var(--gold);
+            font-weight: 700;
+        }
 
-        /* Cycle Info */
         .cycle-info {
-            font-size: 0.78rem;
-            color: var(--text-muted);
+            padding: 14px 16px;
+            font-size: 0.8rem;
             line-height: 1.7;
-            padding: 12px;
-            background: rgba(255,255,255,0.02);
-            border-radius: var(--radius-xs);
-            border: 1px solid var(--border);
+            color: var(--muted);
+            border-left: 2px solid color-mix(in srgb, var(--gold) 45%, transparent);
+            background: color-mix(in srgb, var(--gold) 4%, transparent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         }
-        .cycle-info strong { color: var(--text-dim); }
+        .cycle-info strong { color: var(--gold); font-size: 0.84rem; }
 
-        /* ========== Main Content ========== */
+        /* 主表格区域 */
         .main-content {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
             overflow: hidden;
-            backdrop-filter: blur(24px);
+            padding: 20px;
         }
         .table-header-bar {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         .table-header-bar h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .table-header-bar .badge {
-            font-size: 0.78rem;
-            color: var(--text-dim);
-            background: rgba(255,255,255,0.05);
-            padding: 4px 10px;
-            border-radius: 20px;
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
         }
-        .table-wrap { overflow: visible; }
-
-        /* Table */
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
+            font-size: 0.88rem;
         }
-        thead { position: sticky; top: 0; z-index: 10; }
         th {
-            padding: 14px 16px;
+            padding: 12px 14px;
             text-align: left;
-            font-size: 0.78rem;
             font-weight: 600;
-            color: var(--text-dim);
+            color: var(--muted);
+            font-size: 0.82rem;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            background: rgba(24,24,37,0.95);
-            border-bottom: 2px solid var(--border-active);
+            background: rgba(22, 24, 38, 0.7);
+            border-bottom: 1px solid var(--border);
             white-space: nowrap;
         }
         td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            font-size: 0.9rem;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.035);
             vertical-align: middle;
         }
         tr:last-child td { border-bottom: none; }
-        tr { transition: background var(--transition); }
-        tbody tr:hover { background: rgba(255,255,255,0.03); }
-
-        /* Row states */
-        tr.row-current {
-            background: linear-gradient(90deg, rgba(240,192,96,0.12) 0%, rgba(240,192,96,0.03) 60%, transparent 100%);
-            border-left: 3px solid var(--gold);
+        tr:hover td {
+            background: var(--panel-hover);
         }
-        tr.row-current td:first-child { padding-left: 13px; }
-
-        /* Badges */
-        .org-badge {
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+        .badge-now {
+            background: rgba(240, 192, 96, 0.2);
+            color: var(--gold);
+            border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+            animation: pulseGlow 1.8s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 2px color-mix(in srgb, var(--gold) 20%, transparent); }
+            to { box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 45%, transparent); }
+        }
+        .badge-wait {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .org-pill {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
             font-weight: 600;
+            font-size: 0.84rem;
         }
-        .org-badge.chutian { background: rgba(94,201,112,0.15); color: var(--chutian); }
-        .org-badge.yuncong { background: rgba(94,163,240,0.15); color: var(--yuncong); }
-        .org-badge.pifeng { background: rgba(184,127,224,0.15); color: var(--pifeng); }
-        .org-badge.qiongye { background: rgba(240,160,80,0.15); color: var(--qiongye); }
-
-        .time-cell { font-weight: 700; color: var(--gold); font-family: var(--font-mono); font-size: 0.95rem; }
-        .map-cell { color: #81c784; }
-        .site-cell { color: #90caf9; }
-        .stage-cell { display: flex; align-items: center; gap: 8px; }
+        .time-cell {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .time-cell .sub {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--weak);
+            margin-top: 2px;
+        }
         .stage-icon {
-            width: 26px; height: 26px;
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+            margin-right: 6px;
             border-radius: 4px;
-            flex-shrink: 0;
-            object-fit: contain;
         }
-        .desc-cell { color: var(--text-dim); font-size: 0.84rem; max-width: 300px; }
-
-        /* Status pills */
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 600;
-        }
-        .status-pill.current { background: rgba(240,192,96,0.2); color: var(--gold); }
-        .status-pill.upcoming { background: rgba(255,255,255,0.05); color: var(--text-dim); }
-
-        /* States */
-        .loading-state, .empty-state, .error-state {
+        .loading-state, .error-state, .empty-state {
+            padding: 48px 24px;
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-dim);
+            color: var(--muted);
         }
-        .loading-state i, .empty-state i, .error-state i { font-size: 1.8rem; margin-bottom: 12px; display: block; }
-        .loading-state i { color: var(--gold); }
-        .error-state { color: #f87171; }
-        .error-state i { color: #f87171; }
-
-        /* Footer */
-        .footer { text-align: center; padding: 24px 0 8px; }
-        .footer .ver { color: var(--text-muted); font-size: 0.75rem; }
-        .footer .copy { color: var(--text-muted); font-size: 0.7rem; margin-top: 4px; opacity: 0.6; }
-
-        /* ========== Responsive ========== */
-        @media (max-width: 768px) {
-            .container { padding: 12px; }
-            header { padding: 20px 16px; }
-            header h1 { font-size: 1.5rem; }
-            th, td { padding: 10px 8px; font-size: 0.82rem; }
-            .desc-cell { max-width: 160px; font-size: 0.78rem; }
-            .filter-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 600px) {
-            th:nth-child(4), td:nth-child(4),
-            th:nth-child(5), td:nth-child(5) { display: none; }
-            table { display: block; overflow-x: auto; }
+        .loading-state i, .error-state i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
         }
 
-        /* ========== Animations ========== */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* ========== Tab 2: 解阵求解器视图 ========== */
+        .solver-workspace {
+            display: grid;
+            grid-template-columns: minmax(360px, 1.25fr) minmax(320px, 1fr);
+            gap: 24px;
+            align-items: start;
         }
-        .fade-in { animation: fadeIn 0.35s ease both; }
-        tbody tr:nth-child(1) { animation-delay: 0.02s; }
-        tbody tr:nth-child(2) { animation-delay: 0.04s; }
-        tbody tr:nth-child(3) { animation-delay: 0.06s; }
-        tbody tr:nth-child(4) { animation-delay: 0.08s; }
-        tbody tr:nth-child(5) { animation-delay: 0.10s; }
-        tbody tr:nth-child(6) { animation-delay: 0.12s; }
-        tbody tr:nth-child(7) { animation-delay: 0.14s; }
-        tbody tr:nth-child(8) { animation-delay: 0.16s; }
+        @media (max-width: 900px) {
+            .solver-workspace { grid-template-columns: 1fr; }
+        }
+
+        /* 顶部快捷操作栏 */
+        .solver-topbar {
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .solver-topbar-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .solver-topbar-info i {
+            font-size: 20px;
+            color: var(--gold);
+        }
+        .solver-topbar-info strong {
+            display: block;
+            font-size: 14px;
+            color: var(--text);
+        }
+        .solver-topbar-info small {
+            color: var(--muted);
+            font-size: 12px;
+        }
+        .solver-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧画板区 */
+        .canvas-card {
+            padding: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 480px;
+            justify-content: center;
+        }
+        .canvas-toolbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12.5px;
+            color: var(--muted);
+            padding: 0 4px;
+        }
+        .canvas-wrapper {
+            position: relative;
+            max-width: 100%;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+            background: #0d1117;
+            border: 1px solid var(--border);
+        }
+        #solver-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+        }
+
+        /* 空白状态/拖拽上传区域 */
+        .paste-dropzone {
+            width: 100%;
+            min-height: 420px;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.015);
+        }
+        .paste-dropzone:hover, .paste-dropzone.dragover {
+            border-color: var(--gold);
+            background: var(--gold-soft);
+            box-shadow: 0 0 24px color-mix(in srgb, var(--gold) 15%, transparent);
+        }
+        .paste-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(240, 192, 96, 0.12);
+            color: var(--gold);
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+            animation: floatSlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes floatSlow {
+            from { transform: translateY(0); }
+            to { transform: translateY(-6px); }
+        }
+        .paste-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+        .paste-desc {
+            font-size: 13px;
+            color: var(--muted);
+            max-width: 380px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .paste-desc kbd {
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-family: var(--font-mono);
+            color: var(--gold);
+            font-size: 12px;
+        }
+
+        /* 右侧步骤与状态 */
+        .solver-panel {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .solver-status-box {
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .solver-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--weak);
+            flex-shrink: 0;
+        }
+        .solver-status-dot.success {
+            background: #63d39a;
+            box-shadow: 0 0 10px rgba(99, 211, 154, 0.6);
+        }
+        .solver-status-dot.working {
+            background: var(--gold);
+            box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 60%, transparent);
+            animation: pulseSlow 1s infinite alternate;
+        }
+        @keyframes pulseSlow {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+        .solver-status-dot.error {
+            background: #f87171;
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.6);
+        }
+        .solver-status-text strong {
+            display: block;
+            font-size: 13.5px;
+            color: var(--text);
+        }
+        .solver-status-text small {
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
+        /* 解法路线清单卡片 */
+        .paths-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .path-card {
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .path-card:hover {
+            background: var(--panel-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .path-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .path-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 13.5px;
+        }
+        .path-color-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .path-meta {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+        }
+        .path-steps {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.28);
+            padding: 8px 10px;
+            border-radius: var(--radius-xs);
+            border: 1px solid rgba(255, 255, 255, 0.035);
+        }
+        .path-steps b { color: var(--text); }
+
+        /* ========== 优雅 Fluid Dynamic Island Toast（完全对齐 jx3-loot-forge）========== */
+        .toast-container {
+            position: fixed;
+            z-index: 120;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            width: min(480px, calc(100vw - 32px));
+            display: flex;
+            justify-content: center;
+        }
+        .toast-card {
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 11px 14px 13px 12px;
+            background: rgba(18, 20, 32, 0.94);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+            font-size: 13px;
+            color: #f0f6fc;
+            animation: toastSpringIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transition: transform 0.2s ease;
+        }
+        @keyframes toastSpringIn {
+            0% { opacity: 0; transform: translateY(24px) scale(0.92); filter: blur(4px); }
+            65% { transform: translateY(-3px) scale(1.01); filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        .toast-icon-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .toast-icon-badge.success {
+            background: rgba(46, 160, 67, 0.25);
+            color: #56d364;
+            border: 1px solid rgba(46, 160, 67, 0.5);
+            box-shadow: 0 0 10px rgba(46, 160, 67, 0.4);
+        }
+        .toast-icon-badge.warning {
+            background: color-mix(in srgb, var(--gold) 25%, transparent);
+            color: #f0c060;
+            border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
+        }
+        .toast-icon-badge.error {
+            background: rgba(248, 81, 73, 0.25);
+            color: #ff7b72;
+            border: 1px solid rgba(248, 81, 73, 0.5);
+        }
+        .toast-content {
+            flex: 1;
+            min-width: 0;
+            line-height: 1.45;
+        }
+        .toast-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--weak);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 14px;
+        }
+        .toast-close-btn:hover { color: #fff; }
+        .toast-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2.5px;
+            width: 100%;
+            animation: toastCountdown 3.2s linear forwards;
+            transform-origin: left center;
+        }
+        @keyframes toastCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .toast-progress-bar.success { background: linear-gradient(90deg, #56d364, #7ee787); }
+        .toast-progress-bar.warning { background: linear-gradient(90deg, #f0c060, #ffd33d); }
+        .toast-progress-bar.error { background: linear-gradient(90deg, #ff7b72, #ffa198); }
+
+        /* ========== Footer 版权署名 ========== */
+        .footer {
+            margin-top: 48px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .footer a { color: var(--gold); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><img src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="" style="width:32px;height:32px;vertical-align:middle;">剑网3名望时间管理大师</h1>
-            <p class="subtitle">实时追踪楚天社 · 云从社 · 披风会 · 穹野卫名望活动进度</p>
+    <div class="app-shell">
+        <!-- ====== Topbar 顶部品牌栏 ====== -->
+        <header class="topbar">
+            <div class="brand-block">
+                <img class="brand-logo" src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望时间管理大师" />
+                <div class="brand-meta">
+                    <div class="brand-line">
+                        <h1>剑网3名望时间管理大师</h1>
+                        <span class="version-pill" title="软件版本：v1.2.0">v1.2.0</span>
+                        
+                    </div>
+                    <div class="brand-sub">
+                        <span class="brand-en">Jx3 Renown Timetable</span>
+                        <span class="brand-dot">·</span>
+                        <span class="brand-author" title="开发者/作者：凌千羽·龙争虎斗">by 凌千羽·龙争虎斗</span>
+                        <span class="brand-dot">·</span>
+                        <span class="brand-tagline">名望排班追踪与解阵计算工坊</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- 模块双段切换器 -->
+                <div class="client-switcher" role="tablist" aria-label="功能模块切换">
+                    <button type="button" class="client-tab active" id="tab-btn-timetable" role="tab" aria-selected="true">
+                        <i class="fas fa-clock"></i> 名望时间表
+                    </button>
+                    <button type="button" class="client-tab" id="tab-btn-solver" role="tab" aria-selected="false">
+                        <i class="fas fa-puzzle-piece"></i> 解阵求解器
+                    </button>
+                </div>
+                <button class="button ghost" type="button" id="header-btn-refresh" title="立即刷新排班数据">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+                <a class="button ghost" href="https://github.com/cyt7732/jx3-renown-timetable" target="_blank" rel="noopener" title="查看 GitHub 仓库源码">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
         </header>
 
-        <div class="dashboard">
-            <!-- ====== Sidebar ====== -->
-            <aside class="sidebar">
-
-                <!-- 组织筛选 -->
-                <div class="sidebar-card">
-                    <div class="card-title"><i class="fas fa-filter"></i>名望组织</div>
-                    <div class="filter-grid" id="filter-grid"></div>
-                </div>
-
-                <!-- 时间范围 -->
-                <div class="sidebar-card">
-                    <div class="card-title"><i class="fas fa-clock"></i>时间范围</div>
-                    <div class="range-row">
-                        <input type="range" min="30" max="1440" step="30" value="60" class="range-slider" id="range-slider">
-                        <span class="range-label" id="range-label">1小时</span>
+        <!-- ====== Tab 1: 名望时间表视图 ====== -->
+        <section id="view-timetable" class="view-section active">
+            <div class="dashboard">
+                <!-- 侧边控制栏 -->
+                <aside class="sidebar">
+                    <!-- 名望组织筛选 -->
+                    <div class="sidebar-card glass-panel">
+                        <div class="card-title"><i class="fas fa-filter"></i> 名望组织</div>
+                        <div class="filter-grid" id="filter-grid"></div>
                     </div>
-                </div>
 
-                <!-- 自定义时间 -->
-                <div class="sidebar-card" style="padding:0; overflow:hidden;">
-                    <div class="custom-time-toggle" id="custom-time-toggle">
-                        <span><i class="fas fa-user-clock"></i>&nbsp; 自定义时间</span>
-                        <i class="fas fa-chevron-down chevron" id="custom-chevron"></i>
-                    </div>
-                    <div class="custom-time-body" id="custom-time-body">
-                        <div class="inner">
-                            <input type="time" id="custom-time-input">
-                            <button class="btn btn-primary" id="custom-time-apply">应用</button>
-                            <button class="btn btn-reset" id="custom-time-reset">重置</button>
+                    <!-- 时间范围控制 -->
+                    <div class="sidebar-card glass-panel">
+                        <div class="card-title"><i class="fas fa-hourglass-half"></i> 预测时间范围</div>
+                        <div class="range-row">
+                            <input type="range" min="30" max="1440" step="30" value="60" class="range-slider" id="range-slider">
+                            <span class="range-label" id="range-label">1小时</span>
                         </div>
                     </div>
+
+                    <!-- 自定义时间 -->
+                    <div class="sidebar-card glass-panel" style="padding:0; overflow:hidden;">
+                        <div class="custom-time-toggle" id="custom-time-toggle">
+                            <span><i class="fas fa-user-clock"></i>&nbsp; 自定义测试时间</span>
+                            <i class="fas fa-chevron-down chevron" id="custom-chevron"></i>
+                        </div>
+                        <div class="custom-time-body" id="custom-time-body">
+                            <div class="inner" style="padding: 10px 16px 16px;">
+                                <input type="time" id="custom-time-input">
+                                <button class="button primary" id="custom-time-apply" style="padding:6px 12px; font-size:12px;">应用</button>
+                                <button class="button ghost" id="custom-time-reset" style="padding:6px 12px; font-size:12px;">重置</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 状态概览 -->
+                    <div class="sidebar-card glass-panel">
+                        <div class="card-title"><i class="fas fa-info-circle"></i> 运行状态</div>
+                        <div class="status-row"><span class="label">基准时间</span><span class="value highlight" id="current-time">--</span></div>
+                        <div class="status-row"><span class="label">数据更新</span><span class="value" id="last-updated">--</span></div>
+                        <div class="status-row"><span class="label">当前活动数</span><span class="value" id="total-activities">0</span></div>
+                        <div class="status-row"><span class="label">自动刷新倒计时</span><span class="value" id="next-refresh">--</span></div>
+                    </div>
+
+                    <!-- 循环规则备忘 -->
+                    <div class="cycle-info">
+                        <strong>循环规则提示</strong><br>
+                        楚天社：2小时（烂柯山 → 晟江 → 百溪 → 楚州）<br>
+                        云从社：2小时循环（银霜口）<br>
+                        披风会：3小时循环（河西瀚漠）<br>
+                        穹野卫：3小时循环（伊丽川）
+                    </div>
+                </aside>
+
+                <!-- 活动主表格 -->
+                <main class="main-content glass-panel">
+                    <div class="table-header-bar">
+                        <h2><i class="fas fa-list-alt" style="color:var(--gold);"></i> 实时排班明细</h2>
+                        <span class="badge" id="table-badge">正在加载...</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>组织</th>
+                                    <th>发生时间</th>
+                                    <th>所属地图</th>
+                                    <th>具体地点</th>
+                                    <th>活动阶段</th>
+                                    <th>任务指引与描述</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activities-table">
+                                <tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在拉取名望活动数据...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- ====== Tab 2: 解阵求解器视图 ====== -->
+        <section id="view-solver" class="view-section">
+            <div class="solver-topbar glass-panel">
+                <div class="solver-topbar-info">
+                    <i class="fas fa-magic"></i>
+                    <div>
+                        <strong>截图即解 · 智能图像识别与 Flow 连线计算引擎</strong>
+                        <small>在游戏里按 <kbd style="background:rgba(255,255,255,.08); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); color:var(--gold);">Win+Shift+S</kbd> 框选解阵面板，直接按 <kbd style="background:rgba(255,255,255,.08); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); color:var(--gold);">Ctrl+V</kbd> 粘贴即可瞬间算解！</small>
+                    </div>
+                </div>
+                <div class="solver-topbar-actions">
+                    <input type="file" id="solver-file-input" accept="image/*" hidden>
+                    <button class="button primary" id="btn-load-sample" title="载入本次实战游戏截图示例，体验秒解">
+                        <i class="fas fa-sparkles"></i> 载入示例题目
+                    </button>
+                    <button class="button ghost" id="btn-trigger-upload" title="选择本地图片文件">
+                        <i class="fas fa-folder-open"></i> 上传图片
+                    </button>
+                    <button class="button ghost" id="btn-clear-solver" title="清除当前画板重新粘贴">
+                        <i class="fas fa-trash-alt"></i> 清空
+                    </button>
+                </div>
+            </div>
+
+            <div class="solver-workspace">
+                <!-- 左侧画板区 -->
+                <div class="canvas-card glass-panel" id="canvas-card">
+                    <!-- 初始未粘贴时的投放区 -->
+                    <div class="paste-dropzone" id="paste-dropzone">
+                        <div class="paste-icon"><i class="fas fa-paste"></i></div>
+                        <h3 class="paste-title">按下 <kbd>Ctrl + V</kbd> 粘贴截图</h3>
+                        <p class="paste-desc">支持全屏或局部游戏截图；也可拖拽图片文件到此，或点击卡片选择图片。</p>
+                        <span class="badge" style="background:rgba(240,192,96,.12); color:var(--gold); border:1px solid color-mix(in srgb, var(--gold) 35%, transparent); padding:5px 12px;">
+                            ⚡ 纯前端本地视觉识别 · 毫秒级均衡求解 · 零隐私上传
+                        </span>
+                    </div>
+
+                    <!-- 粘贴/加载后的画板容器 -->
+                    <div class="canvas-wrapper" id="canvas-wrapper" style="display:none;">
+                        <canvas id="solver-canvas"></canvas>
+                    </div>
                 </div>
 
-                <!-- 状态 -->
-                <div class="sidebar-card">
-                    <div class="card-title"><i class="fas fa-info-circle"></i>状态</div>
-                    <div class="status-row"><span class="label">当前时间</span><span class="value highlight" id="current-time">--</span></div>
-                    <div class="status-row"><span class="label">最后更新</span><span class="value" id="last-updated">--</span></div>
-                    <div class="status-row"><span class="label">显示活动</span><span class="value" id="total-activities">0</span></div>
-                    <div class="status-row"><span class="label">下次刷新</span><span class="value" id="next-refresh">--</span></div>
-                </div>
+                <!-- 右侧结果分析与走法指引 -->
+                <div class="solver-panel glass-panel">
+                    <div class="card-title" style="margin:0;"><i class="fas fa-route"></i> 识别与走法指引</div>
 
-                <!-- 循环规则 -->
-                <div class="cycle-info">
-                    <strong>循环规则</strong><br>
-                    楚天社：2小时（烂柯山→晟江→百溪→楚州）<br>
-                    云从社：2小时循环<br>
-                    披风会：3小时循环<br>
-                    穹野卫：3小时循环
-                </div>
+                    <!-- 状态指示框 -->
+                    <div class="solver-status-box">
+                        <div class="solver-status-dot" id="solver-status-dot"></div>
+                        <div class="solver-status-text">
+                            <strong id="solver-status-title">等待输入截图</strong>
+                            <small id="solver-status-desc">按 Ctrl+V 粘贴截图或点击上方【载入示例题目】</small>
+                        </div>
+                    </div>
 
-            </aside>
+                    <!-- 解法卡片列表 -->
+                    <div class="paths-container" id="paths-container">
+                        <div class="empty-state" style="padding:28px 10px;">
+                            <i class="fas fa-chess-board" style="font-size:2rem; opacity:0.35; margin-bottom:8px; display:block;"></i>
+                            <span style="font-size:12.5px;">暂无解题路线，输入截图后自动规划最优拖拽路径</span>
+                        </div>
+                    </div>
 
-            <!-- ====== Main Table ====== -->
-            <main class="main-content">
-                <div class="table-header-bar">
-                    <h2>名望时间表</h2>
-                    <span class="badge" id="table-badge">加载中...</span>
+                    <!-- 底部操作与辅助微调 -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px; padding-top:10px; border-top:1px solid var(--border);">
+                        <button class="button primary" id="btn-copy-solution" style="flex:1;" disabled>
+                            <i class="fas fa-copy"></i> 复制走法文本
+                        </button>
+                        <button class="button ghost" id="btn-re-solve" style="font-size:12px;" disabled>
+                            <i class="fas fa-redo-alt"></i> 一键重算
+                        </button>
+                    </div>
                 </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>组织</th>
-                                <th>时间</th>
-                                <th>地图</th>
-                                <th>地点</th>
-                                <th>活动阶段</th>
-                                <th>任务描述</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activities-table">
-                            <tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i>正在加载活动数据...</td></tr>
-                        </tbody>
-                    </table>
+            </div>
+        </section>
+
+        <!-- ====== 全局流体 Toast 提示条（对齐 jx3-loot-forge）====== -->
+        <div class="toast-container" id="toast-container" style="display:none;">
+            <div class="toast-card success" id="toast-card">
+                <div class="toast-icon-badge success" id="toast-icon">✓</div>
+                <div class="toast-content">
+                    <span class="toast-text" id="toast-text">提示信息</span>
                 </div>
-            </main>
+                <button type="button" class="toast-close-btn" id="toast-close-btn">✕</button>
+                <div class="toast-progress-bar success" id="toast-progress"></div>
+            </div>
         </div>
 
-        <div class="footer">
-            <div class="ver">JX3 Celebrity Timetable v1.1.3 | 2026-07-03</div>
-            <div class="copy">&copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.</div>
-        </div>
+        <!-- ====== Footer 底部署名 ====== -->
+        <footer class="footer">
+            <div class="ver">
+                <span class="brand-en">Jx3 Renown Timetable</span> v1.2.0 | 2026-11-01
+            </div>
+            <div class="copy">
+                &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
+            </div>
+        </footer>
     </div>
+
+    <!-- 内嵌示例截图 Base64 数据（紧凑 WebP）-->
+    <script>
+    const SAMPLE_IMAGE_BASE64 = "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";
+    </script>
 
     <script>
     /* ================================================================
-       剑网3名望时间管理大师 v1.1.3
-       重构：统一相对偏移时间模型，消除跨日特判逻辑
+       jx3-renown-timetable v1.2.0
+       统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
+       © 2026 凌千羽·龙争虎斗
        ================================================================ */
 
-    // ── 配置 ──────────────────────────────────────────────
+    // ── 全局 Toast 提示组件 ────────────────────────────────────
+    let toastTimer = null;
+    function showToast(message, tone = 'success') {
+        const container = document.getElementById('toast-container');
+        const card = document.getElementById('toast-card');
+        const text = document.getElementById('toast-text');
+        const icon = document.getElementById('toast-icon');
+        const prog = document.getElementById('toast-progress');
+
+        card.className = 'toast-card ' + tone;
+        icon.className = 'toast-icon-badge ' + tone;
+        prog.className = 'toast-progress-bar ' + tone;
+        icon.textContent = tone === 'success' ? '✓' : tone === 'warning' ? '⚡' : '✕';
+        text.textContent = message;
+
+        container.style.display = 'flex';
+        prog.style.animation = 'none';
+        void prog.offsetWidth;
+        prog.style.animation = 'toastCountdown 3.2s linear forwards';
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            container.style.display = 'none';
+        }, 3200);
+    }
+    document.getElementById('toast-close-btn').addEventListener('click', () => {
+        document.getElementById('toast-container').style.display = 'none';
+    });
+
+    // ── 模块 Tab 切换 ─────────────────────────────────────────
+    const tabTimetable = document.getElementById('tab-btn-timetable');
+    const tabSolver = document.getElementById('tab-btn-solver');
+    const viewTimetable = document.getElementById('view-timetable');
+    const viewSolver = document.getElementById('view-solver');
+
+    function switchTab(target) {
+        if (target === 'solver') {
+            tabSolver.classList.add('active');
+            tabSolver.setAttribute('aria-selected', 'true');
+            tabTimetable.classList.remove('active');
+            tabTimetable.setAttribute('aria-selected', 'false');
+            viewSolver.classList.add('active');
+            viewTimetable.classList.remove('active');
+            try { history.replaceState(null, '', '#solver'); } catch (e) {}
+        } else {
+            tabTimetable.classList.add('active');
+            tabTimetable.setAttribute('aria-selected', 'true');
+            tabSolver.classList.remove('active');
+            tabSolver.setAttribute('aria-selected', 'false');
+            viewTimetable.classList.add('active');
+            viewSolver.classList.remove('active');
+            try { history.replaceState(null, '', '#timetable'); } catch (e) {}
+        }
+    }
+    tabTimetable.addEventListener('click', () => switchTab('timetable'));
+    tabSolver.addEventListener('click', () => switchTab('solver'));
+
+    // ── 1. 名望排班核心引擎 ────────────────────────────────────
     const ORG_CONFIG = {
         '楚天社': { id: '楚天社', type: 0, cycle: 120, color: 'chutian', name: '楚天社' },
         '云从社': { id: '云从社', type: 1, cycle: 120, color: 'yuncong', name: '云从社' },
@@ -543,13 +1244,11 @@
         '穹野卫': { id: '穹野卫', type: 3, cycle: 180, color: 'qiongye', name: '穹野卫' }
     };
     const ORG_IDS = Object.keys(ORG_CONFIG);
-
     const CACHE_TTL = 30 * 60 * 1000;
-    const CACHE_VER = 'v1.1';
+    const CACHE_VER = 'v1.2';
     const ICON_BASE = 'https://img.jx3box.com/pve/minimap/minimap_';
     const API_BASE = 'https://cms.jx3box.com/api/cms/game/celebrity?type=';
 
-    // ── DOM refs ──────────────────────────────────────────
     const $ = id => document.getElementById(id);
     const dom = {
         filterGrid: $('filter-grid'),
@@ -569,139 +1268,99 @@
         tableBadge: $('table-badge'),
     };
 
-    // ── 状态 ──────────────────────────────────────────────
-    const state = {
-        // 数据：按组织分组，每个活动已预处理 cycleOffset
-        activitiesByOrg: {},
-        // 用户偏好
-        selectedOrgs: [...ORG_IDS],
-        timeRange: 60,         // 分钟
-        customTime: null,      // "HH:MM" | null
-        // 运行时
-        dataLoaded: false,
-        nextRefresh: null,
-        refreshTimer: null,
+    const timetableState = {
+        filterOrgs: new Set(ORG_IDS),
+        timeRange: 60,
+        customTime: null,
         customExpanded: false,
+        dataLoaded: false,
+        lastFetchTime: null,
+        activitiesByOrg: {},
+        refreshTimer: null,
+        nextRefresh: null
     };
 
-    // ── 工具函数 ──────────────────────────────────────────
-    const pad = n => String(n).padStart(2, '0');
-    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-    const mod = (v, base) => ((v % base) + base) % base;
-
     function safeStorageGet(key) {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            console.warn('localStorage读取失败:', e.message);
-            return null;
-        }
+        try { return localStorage.getItem(key); }
+        catch (e) { console.warn('localStorage读取失败:', e.message); return null; }
     }
-
     function safeStorageSet(key, value) {
-        try {
-            localStorage.setItem(key, value);
-            return true;
-        } catch (e) {
-            console.warn('localStorage写入失败:', e.message);
-            return false;
-        }
+        try { localStorage.setItem(key, value); }
+        catch (e) { console.warn('localStorage写入失败:', e.message); }
     }
-
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, ch => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[ch]));
     }
-
+    function mod(n, m) { return ((n % m) + m) % m; }
     function activityKey(a) {
-        return a.id != null
-            ? `id:${a.id}`
-            : `raw:${a.key || ''}|${a.hour ?? ''}|${a.time ?? ''}|${a.stage || ''}|${a.site || ''}`;
+        return `${a.map_id}_${a.site}_${a.stage}_${a.time_desc || ''}`;
     }
-
     function renderIcon(icon) {
-        const safeIcon = String(icon ?? '');
-        if (!/^\d+$/.test(safeIcon)) return '';
-        return `<img src="${ICON_BASE}${safeIcon}.png" class="stage-icon" onerror="this.style.display='none'" alt="" loading="lazy">`;
+        const rawIcon = String(icon ?? '').trim();
+        if (!/^[0-9]+$/.test(rawIcon)) return '';
+        const safeIcon = encodeURIComponent(rawIcon);
+        return `<img class="stage-icon" src="${ICON_BASE}${safeIcon}.png" alt="icon" onerror="this.style.display='none'">`;
     }
 
-    /** 获取当前模拟时间 */
     function getNow() {
-        const d = new Date();
-        if (state.customTime) {
-            const [h, m] = state.customTime.split(':').map(Number);
-            d.setHours(h, m, 0, 0);
-        }
-        return d;
+        if (timetableState.customTime) return timetableState.customTime;
+        const now = new Date();
+        const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+        return new Date(utc + 8 * 3600000);
     }
-
-    /** 当前总分钟数 (0-1439) */
     function nowMinutes() {
-        const n = getNow();
-        return n.getHours() * 60 + n.getMinutes();
+        const d = getNow();
+        return d.getHours() * 60 + d.getMinutes();
     }
 
-    // ── 数据加载 ──────────────────────────────────────────
-    function cacheKey(orgId) { return `jx3-celeb-${CACHE_VER}-${orgId}`; }
-
+    function cacheKey(orgId) { return `jx3-renown-timetable-${CACHE_VER}-${orgId}`; }
     function getCached(orgId) {
-        const raw = safeStorageGet(cacheKey(orgId));
+        let raw = safeStorageGet(cacheKey(orgId));
+        if (!raw) raw = safeStorageGet(`jx3-celeb-v1.1-${orgId}`);
         if (!raw) return null;
         try {
             const pkg = JSON.parse(raw);
             if (pkg && Date.now() - pkg.ts < CACHE_TTL && Array.isArray(pkg.data)) return pkg.data;
-        } catch (e) { /* ignore */ }
+        } catch (e) {}
         return null;
     }
-
     function setCache(orgId, data) {
         safeStorageSet(cacheKey(orgId), JSON.stringify({ ts: Date.now(), data }));
     }
 
     async function fetchOrg(orgId, retries = 3) {
-        const cfg = ORG_CONFIG[orgId];
         const cached = getCached(orgId);
         if (cached) return cached;
-
-        for (let i = 1; i <= retries; i++) {
+        const cfg = ORG_CONFIG[orgId];
+        for (let i = 0; i < retries; i++) {
             try {
-                const res = await fetch(API_BASE + cfg.type);
+                const res = await fetch(`${API_BASE}${cfg.type}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
-                if (json.code !== 0) throw new Error(json.msg || 'API error');
-                setCache(orgId, json.data);
-                return json.data;
-            } catch (err) {
-                console.warn(`[${orgId}] 第${i}次获取失败:`, err.message);
-                if (i === retries) {
-                    const cached = getCached(orgId);
-                    if (cached) { console.log(`[${orgId}] 使用缓存`); return cached; }
-                    return [];
+                if (json.code === 200 && Array.isArray(json.data)) {
+                    setCache(orgId, json.data);
+                    return json.data;
                 }
-                await new Promise(r => setTimeout(r, 1000 * i));
+            } catch (err) {
+                if (i === retries - 1) {
+                    const cached = getCached(orgId);
+                    if (cached) return cached;
+                    throw err;
+                }
+                await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
             }
         }
+        return [];
     }
 
-    /**
-     * 预处理单个活动：
-     * 1. 计算 cycleOffset = hour*60 + time
-     * 2. 修正楚天社/云从社奇数序列的小时偏移（API数据问题：c1/y1系列的hour标记为0，实际应为1）
-     */
     function preprocessActivity(raw, orgId) {
         const cfg = ORG_CONFIG[orgId];
-        let hour = raw.hour || 0;
-        // API数据修正：楚天社c1*序列和云从社y1序列的hour应+1
-        if (orgId === '楚天社' && raw.key && raw.key.startsWith('c1')) hour = (hour + 1) % 24;
-        if (orgId === '云从社' && raw.key === 'y1') hour = (hour + 1) % 24;
-        const rawOffset = hour * 60 + (raw.time || 0);
+        const rawOffset = parseInt(raw.time) || 0;
         return {
             ...raw,
+            orgId,
             rawOffset,
             cycleOffset: mod(rawOffset, cfg.cycle),
         };
@@ -711,303 +1370,933 @@
         const results = await Promise.all(ORG_IDS.map(id => fetchOrg(id)));
         for (let i = 0; i < ORG_IDS.length; i++) {
             const orgId = ORG_IDS[i];
-            state.activitiesByOrg[orgId] = (results[i] || []).map(a => preprocessActivity(a, orgId));
+            timetableState.activitiesByOrg[orgId] = (results[i] || []).map(a => preprocessActivity(a, orgId));
         }
-        state.dataLoaded = true;
+        timetableState.dataLoaded = true;
+        timetableState.lastFetchTime = new Date();
     }
 
-    // ── 时间引擎（核心重构）────────────────────────────────
-    /**
-     * 相对偏移模型：
-     * - 每个活动有 cycleOffset（在周期内的分钟偏移，0 ~ cycleLength-1）
-     * - 当前时间在周期内的位置：currentOffset = nowMinutes % cycleLength
-     * - 活动距现在的分钟数：(cycleOffset - currentOffset + cycleLength) % cycleLength
-     * - 跨日问题自然消失——因为所有比较都是相对偏移，不依赖绝对时间轴
-     */
     function minutesUntil(cycleOffset, currentOffset, cycleLength) {
         return (cycleOffset - currentOffset + cycleLength) % cycleLength;
     }
 
-    /** 找出当前活动：在 cycleOffset <= currentOffset 的活动中取偏移最大的 */
     function findCurrentActivity(activities, currentOffset) {
         if (!activities.length) return null;
-        const candidates = activities.filter(a => a.cycleOffset <= currentOffset);
-        if (candidates.length === 0) {
-            // 所有活动都在未来 → 当前活动是上一周期的最后一个
-            const max = activities.reduce((a, b) => a.cycleOffset > b.cycleOffset ? a : b);
-            return max;
-        }
-        return candidates.reduce((a, b) => a.cycleOffset > b.cycleOffset ? a : b);
-    }
-
-    /** 格式化显示时间：当前活动显示最近一次发生时间，未来活动显示下一次发生时间 */
-    function formatDisplayTime(cycleOffset, currentMinutes, cycleLength, isCurrent) {
-        const currentOffset = currentMinutes % cycleLength;
-        let dist;
-        if (isCurrent) {
-            // 当前活动：计算距最近一次发生时间的偏移（负数或0）
-            dist = cycleOffset - currentOffset;
-            if (dist > 0) dist -= cycleLength;  // 发生在上一周期
-        } else {
-            // 未来活动：距下一次发生的偏移（正数）
-            dist = minutesUntil(cycleOffset, currentOffset, cycleLength);
-        }
-        let absolute = currentMinutes + dist;
-        absolute = ((absolute % 1440) + 1440) % 1440;
-        return `${pad(Math.floor(absolute / 60))}:${pad(absolute % 60)}`;
-    }
-
-    /** 获取单个组织的活动展示列表 */
-    function getOrgDisplay(orgId) {
-        const activities = state.activitiesByOrg[orgId] || [];
-        if (!activities.length) return [];
-
-        const cfg = ORG_CONFIG[orgId];
-        const currentMinutes = nowMinutes();
-        const currentOffset = currentMinutes % cfg.cycle;
-
-        // 找当前活动
-        const current = findCurrentActivity(activities, currentOffset);
-
-        const results = [];
-        const seen = new Set();
-
-        if (current) {
-            const key = `${orgId}|${activityKey(current)}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                results.push({
-                    ...current,
-                    orgId,
-                    orgColor: cfg.color,
-                    isCurrent: true,
-                    displayTime: formatDisplayTime(current.cycleOffset, currentMinutes, cfg.cycle, true),
-                    sortKey: (() => {  // 用绝对开始分钟数排序，跨周期cycleOffset不可比
-                        let d = current.cycleOffset - currentOffset;
-                        if (d > 0) d -= cfg.cycle;
-                        return (currentMinutes + d) - 100000;
-                    })(),  // 当前活动始终排最前，内部按绝对开始时间排序
-                });
+        let best = null;
+        for (const a of activities) {
+            if (a.cycleOffset <= currentOffset) {
+                if (!best || a.cycleOffset > best.cycleOffset) best = a;
             }
         }
+        if (!best) {
+            for (const a of activities) {
+                if (!best || a.cycleOffset > best.cycleOffset) best = a;
+            }
+        }
+        return best;
+    }
 
-        // 未来活动：距现在 <= timeRange 分钟
-        for (const a of activities) {
-            const key = `${orgId}|${activityKey(a)}`;
-            if (seen.has(key)) continue;
-            const dist = minutesUntil(a.cycleOffset, currentOffset, cfg.cycle);
-            if (dist > 0 && dist <= state.timeRange) {
-                seen.add(key);
+    function formatDisplayTime(cycleOffset, currentMinutes, cycleLength, isCurrent) {
+        if (isCurrent) return '当前进行中';
+        const currentCyclePos = mod(currentMinutes, cycleLength);
+        const minsLeft = minutesUntil(cycleOffset, currentCyclePos, cycleLength);
+        const absMinutes = mod(currentMinutes + minsLeft, 1440);
+        const h = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+        const m = String(absMinutes % 60).padStart(2, '0');
+        if (minsLeft < 60) return `${h}:${m} <span class="sub">${minsLeft}分钟后</span>`;
+        const leftH = Math.floor(minsLeft / 60);
+        const leftM = minsLeft % 60;
+        return `${h}:${m} <span class="sub">${leftH}小时${leftM > 0 ? leftM + '分' : ''}后</span>`;
+    }
+
+    function getOrgDisplay(orgId) {
+        const nowMin = nowMinutes();
+        const cfg = ORG_CONFIG[orgId];
+        const acts = timetableState.activitiesByOrg[orgId] || [];
+        if (!acts.length) return [];
+        const currentCyclePos = mod(nowMin, cfg.cycle);
+        const currentAct = findCurrentActivity(acts, currentCyclePos);
+        const results = [];
+        const seenKeys = new Set();
+        if (currentAct) {
+            const key = activityKey(currentAct);
+            seenKeys.add(key);
+            results.push({
+                ...currentAct,
+                timeDisplay: formatDisplayTime(currentAct.cycleOffset, nowMin, cfg.cycle, true),
+                sortKey: -1,
+                isCurrent: true,
+                key
+            });
+        }
+        for (const a of acts) {
+            const key = activityKey(a);
+            if (seenKeys.has(key)) continue;
+            const minsLeft = minutesUntil(a.cycleOffset, currentCyclePos, cfg.cycle);
+            if (minsLeft === 0 && currentAct && a.rawOffset === currentAct.rawOffset) continue;
+            if (minsLeft <= timetableState.timeRange) {
                 results.push({
                     ...a,
-                    orgId,
-                    orgColor: cfg.color,
+                    timeDisplay: formatDisplayTime(a.cycleOffset, nowMin, cfg.cycle, false),
+                    sortKey: minsLeft,
                     isCurrent: false,
-                    displayTime: formatDisplayTime(a.cycleOffset, currentMinutes, cfg.cycle, false),
-                    sortKey: dist,
+                    key
                 });
             }
         }
-
         return results;
     }
 
-    /** 获取所有选中组织的活动，统一排序 */
     function getAllDisplayActivities() {
-        const all = [];
-        for (const orgId of state.selectedOrgs) {
-            all.push(...getOrgDisplay(orgId));
+        let all = [];
+        for (const orgId of ORG_IDS) {
+            if (timetableState.filterOrgs.has(orgId)) {
+                all = all.concat(getOrgDisplay(orgId));
+            }
         }
         all.sort((a, b) => a.sortKey - b.sortKey);
         return all;
     }
 
-    // ── 渲染 ──────────────────────────────────────────────
     function renderFilterChips() {
-        dom.filterGrid.innerHTML = ORG_IDS.map(orgId => {
-            const cfg = ORG_CONFIG[orgId];
-            const active = state.selectedOrgs.includes(orgId);
-            return `
-                <label class="filter-chip ${active ? 'active' : ''}" data-org="${orgId}">
-                    <span class="org-dot ${cfg.color}"></span>
-                    ${cfg.name}
-                </label>`;
-        }).join('');
-
-        dom.filterGrid.querySelectorAll('.filter-chip').forEach(chip => {
+        dom.filterGrid.innerHTML = '';
+        for (const id of ORG_IDS) {
+            const cfg = ORG_CONFIG[id];
+            const chip = document.createElement('label');
+            chip.className = `filter-chip ${timetableState.filterOrgs.has(id) ? 'active' : ''}`;
+            chip.innerHTML = `
+                <input type="checkbox" value="${id}" ${timetableState.filterOrgs.has(id) ? 'checked' : ''}>
+                <span class="org-dot ${cfg.color}"></span>
+                <span>${cfg.name}</span>
+            `;
             chip.addEventListener('click', () => {
-                const orgId = chip.dataset.org;
-                if (state.selectedOrgs.includes(orgId)) {
-                    state.selectedOrgs = state.selectedOrgs.filter(o => o !== orgId);
+                if (timetableState.filterOrgs.has(id)) {
+                    if (timetableState.filterOrgs.size > 1) timetableState.filterOrgs.delete(id);
                 } else {
-                    state.selectedOrgs.push(orgId);
+                    timetableState.filterOrgs.add(id);
                 }
+                chip.classList.toggle('active', timetableState.filterOrgs.has(id));
                 savePrefs();
-                renderAll();
+                renderTable();
             });
-        });
+            dom.filterGrid.appendChild(chip);
+        }
     }
 
     function formatRangeLabel(minutes) {
         if (minutes < 60) return `${minutes}分钟`;
-        const h = minutes / 60;
-        if (h === Math.floor(h)) return `${h}小时`;
-        return `${h}小时`;  // 1.5, 2.5, ...
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return m > 0 ? `${h}小时${m}分` : `${h}小时`;
     }
 
     function renderTable() {
-        if (!state.dataLoaded) return;
-
         const activities = getAllDisplayActivities();
-
         dom.totalActivities.textContent = activities.length;
-        dom.tableBadge.textContent = activities.length ? `共 ${activities.length} 项` : '无结果';
-
         if (!activities.length) {
-            dom.tableBody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-search"></i>没有匹配的活动数据</td></tr>`;
+            dom.tableBody.innerHTML = `<tr><td colspan="6" class="empty-state">当前时间范围内暂无匹配的活动排班</td></tr>`;
+            dom.tableBadge.textContent = '0 项活动';
+            dom.tableBadge.className = 'badge badge-wait';
             return;
         }
+        const currentCount = activities.filter(a => a.isCurrent).length;
+        dom.tableBadge.innerHTML = currentCount > 0
+            ? `<i class="fas fa-dot-circle"></i> ${currentCount} 个进行中 · 共 ${activities.length} 项`
+            : `${activities.length} 项活动`;
+        dom.tableBadge.className = `badge ${currentCount > 0 ? 'badge-now' : 'badge-wait'}`;
 
         dom.tableBody.innerHTML = activities.map(a => {
-            const rowClass = a.isCurrent ? 'row-current' : '';
-            const statusIcon = a.isCurrent ? 'fa-play-circle' : 'fa-circle';
-            const icon = renderIcon(a.icon);
-            return `
-                <tr class="fade-in ${rowClass}">
-                    <td>
-                        <span class="org-badge ${a.orgColor}">
-                            <i class="fas ${statusIcon}"></i> ${escapeHtml(a.orgId)}
-                        </span>
-                    </td>
-                    <td class="time-cell">${escapeHtml(a.displayTime)}</td>
-                    <td class="map-cell">${escapeHtml(a.map)}</td>
-                    <td class="site-cell">${escapeHtml(a.site)}</td>
-                    <td><span class="stage-cell">${icon}${escapeHtml(a.stage)}</span></td>
-                    <td class="desc-cell">${escapeHtml(a.desc)}</td>
-                </tr>`;
+            const cfg = ORG_CONFIG[a.orgId];
+            return `<tr>
+                <td><span class="org-pill"><span class="org-dot ${cfg.color}"></span>${escapeHtml(a.orgId)}</span></td>
+                <td class="time-cell">${a.timeDisplay}</td>
+                <td>${escapeHtml(a.map_name || '-')}</td>
+                <td><strong>${escapeHtml(a.site || '-')}</strong></td>
+                <td>${renderIcon(a.icon)}${escapeHtml(a.stage || '-')}</td>
+                <td style="color:var(--muted); font-size:0.84rem;">${escapeHtml(a.desc || '-')}</td>
+            </tr>`;
         }).join('');
-
-        dom.lastUpdated.textContent = new Date().toLocaleTimeString('zh-CN');
     }
 
     function updateTimeDisplay() {
-        const n = getNow();
-        const ts = n.toLocaleTimeString('zh-CN');
-        if (state.customTime) {
-            dom.currentTime.innerHTML = `${ts} <i class="fas fa-user-clock" style="color:#5ea3f0;font-size:0.7rem;"></i>`;
-        } else {
-            dom.currentTime.textContent = ts;
+        const d = getNow();
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        dom.currentTime.textContent = `${h}:${m}:${s}${timetableState.customTime ? ' (测试)' : ''}`;
+
+        if (timetableState.lastFetchTime) {
+            const lh = String(timetableState.lastFetchTime.getHours()).padStart(2, '0');
+            const lm = String(timetableState.lastFetchTime.getMinutes()).padStart(2, '0');
+            const ls = String(timetableState.lastFetchTime.getSeconds()).padStart(2, '0');
+            dom.lastUpdated.textContent = `${lh}:${lm}:${ls}`;
         }
-        // 下次刷新倒计时
-        if (state.customTime) {
-            dom.nextRefresh.textContent = '自定义模式';
-        } else if (state.nextRefresh) {
-            const sec = Math.max(0, Math.floor((state.nextRefresh - Date.now()) / 1000));
-            dom.nextRefresh.textContent = `${sec}秒`;
+        if (timetableState.nextRefresh && !timetableState.customTime) {
+            const leftSec = Math.max(0, Math.round((timetableState.nextRefresh - Date.now()) / 1000));
+            dom.nextRefresh.textContent = `${leftSec}秒`;
+        } else {
+            dom.nextRefresh.textContent = '--';
         }
     }
 
     function renderAll() {
-        renderFilterChips();
-        renderTable();
         updateTimeDisplay();
+        renderTable();
     }
 
-    // ── 偏好存取 ──────────────────────────────────────────
     function savePrefs() {
-        safeStorageSet('jx3-prefs', JSON.stringify({
-            selectedOrgs: state.selectedOrgs,
-            timeRange: state.timeRange,
+        safeStorageSet('jx3-renown-timetable-prefs', JSON.stringify({
+            filterOrgs: Array.from(timetableState.filterOrgs),
+            timeRange: timetableState.timeRange
         }));
     }
-
     function loadPrefs() {
-        const raw = safeStorageGet('jx3-prefs');
-        if (raw) {
-            try {
-                const p = JSON.parse(raw);
-                if (Array.isArray(p.selectedOrgs)) {
-                    const selected = p.selectedOrgs.filter(orgId => ORG_IDS.includes(orgId));
-                    state.selectedOrgs = selected.length ? selected : [...ORG_IDS];
-                }
-                if (Number.isFinite(Number(p.timeRange))) {
-                    state.timeRange = clamp(Number(p.timeRange), 30, 1440);
-                }
-            } catch (e) { /* ignore */ }
-        }
-        dom.rangeSlider.value = state.timeRange;
-        dom.rangeLabel.textContent = formatRangeLabel(state.timeRange);
+        let raw = safeStorageGet('jx3-renown-timetable-prefs');
+        if (!raw) raw = safeStorageGet('jx3-prefs');
+        if (!raw) return;
+        try {
+            const p = JSON.parse(raw);
+            if (Array.isArray(p.filterOrgs) && p.filterOrgs.length) {
+                timetableState.filterOrgs = new Set(p.filterOrgs.filter(id => ORG_IDS.includes(id)));
+            }
+            if (typeof p.timeRange === 'number' && p.timeRange >= 30 && p.timeRange <= 1440) {
+                timetableState.timeRange = p.timeRange;
+            }
+        } catch (e) {}
+        dom.rangeSlider.value = timetableState.timeRange;
+        dom.rangeLabel.textContent = formatRangeLabel(timetableState.timeRange);
     }
 
-    // ── 定时刷新 ──────────────────────────────────────────
     function scheduleRefresh() {
-        if (state.refreshTimer) clearTimeout(state.refreshTimer);
+        if (timetableState.refreshTimer) clearTimeout(timetableState.refreshTimer);
         const now = Date.now();
         const next = new Date(now);
         next.setMinutes(next.getMinutes() + 1, 0, 0);
-        state.nextRefresh = next.getTime();
-        state.refreshTimer = setTimeout(() => {
-            if (!state.customTime) renderAll();
+        timetableState.nextRefresh = next.getTime();
+        timetableState.refreshTimer = setTimeout(() => {
+            if (!timetableState.customTime) renderAll();
             scheduleRefresh();
         }, next - now);
     }
 
-    // ── 事件绑定 ──────────────────────────────────────────
-    function bindEvents() {
+    function bindTimetableEvents() {
         dom.rangeSlider.addEventListener('input', () => {
-            state.timeRange = parseInt(dom.rangeSlider.value);
-            dom.rangeLabel.textContent = formatRangeLabel(state.timeRange);
+            timetableState.timeRange = parseInt(dom.rangeSlider.value);
+            dom.rangeLabel.textContent = formatRangeLabel(timetableState.timeRange);
             savePrefs();
             renderAll();
         });
-
         dom.customToggle.addEventListener('click', () => {
-            state.customExpanded = !state.customExpanded;
-            if (state.customExpanded) {
-                dom.customChevron.classList.add('open');
-                dom.customBody.classList.add('open');
-            } else {
-                dom.customChevron.classList.remove('open');
-                dom.customBody.classList.remove('open');
-            }
+            timetableState.customExpanded = !timetableState.customExpanded;
+            dom.customChevron.classList.toggle('open', timetableState.customExpanded);
+            dom.customBody.classList.toggle('open', timetableState.customExpanded);
         });
-
         dom.customApply.addEventListener('click', () => {
             const v = dom.customInput.value;
-            if (v) {
-                state.customTime = v;
-                renderAll();
-            }
-        });
-
-        dom.customReset.addEventListener('click', () => {
-            state.customTime = null;
-            dom.customInput.value = '';
+            if (!v) return;
+            const [h, m] = v.split(':').map(Number);
+            const d = new Date();
+            d.setHours(h, m, 0, 0);
+            timetableState.customTime = d;
+            showToast(`已切换至自定义测试时间 ${v}`, 'warning');
             renderAll();
+        });
+        dom.customReset.addEventListener('click', () => {
+            timetableState.customTime = null;
+            dom.customInput.value = '';
+            showToast('已恢复为系统真实时间', 'success');
+            renderAll();
+        });
+        $('header-btn-refresh').addEventListener('click', async () => {
+            $('header-btn-refresh').disabled = true;
+            try {
+                for (const orgId of ORG_IDS) safeStorageSet(cacheKey(orgId), '');
+                await loadAllData();
+                renderAll();
+                showToast('名望数据已刷新至最新状态', 'success');
+            } catch (e) {
+                showToast('刷新失败，请检查网络', 'error');
+            } finally {
+                $('header-btn-refresh').disabled = false;
+            }
         });
     }
 
-    // ── 启动 ──────────────────────────────────────────────
+    // ── 2. 解阵求解器图像识别与 Flow 核心 ────────────────────────
+    const DIRS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    const HUES_REF = [
+        { name: '红', hue: 0, hex: '#ff4d4d' },
+        { name: '橙', hue: 22, hex: '#ff8c1a' },
+        { name: '黄', hue: 40, hex: '#ffd23f' },
+        { name: '绿', hue: 150, hex: '#3ddc84' },
+        { name: '蓝', hue: 208, hex: '#4da3ff' },
+        { name: '紫', hue: 275, hex: '#b06cff' },
+        { name: '粉', hue: 328, hex: '#ff6bcb' }
+    ];
+    const COLOR_MAP = Object.fromEntries(HUES_REF.map(c => [c.name, c.hex]));
+
+    const solverState = {
+        currentImg: null,
+        gridX: [],
+        gridY: [],
+        boardBox: null,
+        endpoints: {},
+        solution: null,
+        solutionPaths: null,
+        solutionNodes: 0,
+        solutionMs: 0
+    };
+
+    const solverCanvas = $('solver-canvas');
+    const solverCtx = solverCanvas.getContext('2d');
+    const dropzone = $('paste-dropzone');
+    const canvasWrapper = $('canvas-wrapper');
+    const statusDot = $('solver-status-dot');
+    const statusTitle = $('solver-status-title');
+    const statusDesc = $('solver-status-desc');
+    const pathsContainer = $('paths-container');
+    const btnCopy = $('btn-copy-solution');
+    const btnReSolve = $('btn-re-solve');
+
+    function updateSolverStatus(tone, title, desc) {
+        statusDot.className = 'solver-status-dot ' + tone;
+        statusTitle.textContent = title;
+        statusDesc.textContent = desc;
+    }
+
+    function longestRun(arr, ratio = 0.45, gap = 20) {
+        let maxVal = 0;
+        for (let i = 0; i < arr.length; i++) if (arr[i] > maxVal) maxVal = arr[i];
+        if (maxVal === 0) return null;
+        const thr = maxVal * ratio;
+        const idx = [];
+        for (let i = 0; i < arr.length; i++) if (arr[i] > thr) idx.push(i);
+        if (idx.length === 0) return null;
+        let best = [idx[0], idx[0]], cur = [idx[0], idx[0]];
+        for (let i = 1; i < idx.length; i++) {
+            if (idx[i] - cur[1] <= gap) cur[1] = idx[i];
+            else {
+                if (cur[1] - cur[0] > best[1] - best[0]) best = cur.slice();
+                cur = [idx[i], idx[i]];
+            }
+        }
+        if (cur[1] - cur[0] > best[1] - best[0]) best = cur.slice();
+        return best;
+    }
+
+    function findPeaks(arr, thr) {
+        const peaks = [];
+        let i = 0, n = arr.length;
+        while (i < n) {
+            if (arr[i] >= thr) {
+                let j = i;
+                while (j < n && arr[j] >= thr) j++;
+                peaks.push((i + j - 1) / 2.0);
+                i = j;
+            } else i++;
+        }
+        return peaks;
+    }
+
+    function rgbToHue(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        if (max === min) return 0;
+        const d = max - min;
+        let h = 0;
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        return (h / 6) * 360;
+    }
+
+    // 纯前端图像分析：检测棋盘深蓝底、定位网格、聚类端点
+    function analyzeImage(img) {
+        const w = img.width, h = img.height;
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = w; offCanvas.height = h;
+        const offCtx = offCanvas.getContext('2d');
+        offCtx.drawImage(img, 0, 0);
+        const imgData = offCtx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+
+        // 1. 定位棋盘区域 (深蓝灰底色)
+        const colsum = new Int32Array(w);
+        const rowsum = new Int32Array(h);
+        for (let y = 0; y < h; y++) {
+            const rowOffset = y * w * 4;
+            for (let x = 0; x < w; x++) {
+                const idx = rowOffset + x * 4;
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                if (r >= 15 && r <= 32 && g >= 24 && g <= 42 && b >= 32 && b <= 52 && (b - r) >= 11) {
+                    colsum[x]++; rowsum[y]++;
+                }
+            }
+        }
+
+        let xr = longestRun(colsum);
+        let yr = longestRun(rowsum);
+        if (!xr || !yr || (xr[1] - xr[0] < 180) || (yr[1] - yr[0] < 180)) {
+            // 兜底：如果整幅图就是棋盘截图，直接将整幅图作为分析范围
+            xr = [Math.floor(w * 0.05), Math.floor(w * 0.95)];
+            yr = [Math.floor(h * 0.05), Math.floor(h * 0.95)];
+        }
+
+        const x0 = xr[0], x1 = xr[1];
+        const y0 = yr[0], y1 = yr[1];
+
+        // 2. 网格中心亮点投影
+        const pad = 6;
+        const brightCol = new Int32Array(w);
+        const brightRow = new Int32Array(h);
+        for (let y = y0 + pad; y < y1 - pad; y++) {
+            const rowOffset = y * w * 4;
+            for (let x = x0 + pad; x < x1 - pad; x++) {
+                const idx = rowOffset + x * 4;
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                const lum = (r + g + b) / 3;
+                const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+                const sat = mx > 0 ? (mx - mn) / mx : 0;
+                if (lum >= 78 && lum <= 122 && sat < 0.35) {
+                    brightCol[x]++; brightRow[y]++;
+                }
+            }
+        }
+
+        let maxColB = 0, maxRowB = 0;
+        for (let x = x0 + pad; x < x1 - pad; x++) if (brightCol[x] > maxColB) maxColB = brightCol[x];
+        for (let y = y0 + pad; y < y1 - pad; y++) if (brightRow[y] > maxRowB) maxRowB = brightRow[y];
+
+        let gx = findPeaks(brightCol, Math.max(4, maxColB * 0.18));
+        let gy = findPeaks(brightRow, Math.max(4, maxRowB * 0.18));
+
+        // 若峰值未能凑齐7条，按均匀步长自动推算
+        // 剔除间距过小的毛刺伪峰（标准棋盘格距约 60px）
+        function cleanPeaks(arr) {
+            if (!arr || arr.length <= 1) return arr;
+            const sorted = arr.slice().sort((a, b) => a - b);
+            const res = [sorted[0]];
+            for (let i = 1; i < sorted.length; i++) {
+                if (sorted[i] - res[res.length - 1] >= 40) {
+                    res.push(sorted[i]);
+                }
+            }
+            return res;
+        }
+        gx = cleanPeaks(gx);
+        gy = cleanPeaks(gy);
+
+        function enforceSeven(arr, start, end) {
+            if (arr.length === 7) return arr;
+            if (arr.length > 7) {
+                // 如果多于7个，取步长最接近中位数的连续7个
+                return arr.slice(0, 7);
+            }
+            const step = (end - start) / 7;
+            const res = [];
+            for (let i = 0; i < 7; i++) res.push(start + step * (i + 0.5));
+            return res;
+        }
+        gx = enforceSeven(gx, x0, x1);
+        gy = enforceSeven(gy, y0, y1);
+
+        // 3. 高饱和彩色端点识别：严格限制在棋盘区域内部，且精确区分节点与灰色小圆点
+        const ex0 = Math.max(0, x0 + 4), ex1 = Math.min(w - 1, x1 - 4);
+        const ey0 = Math.max(0, y0 + 4), ey1 = Math.min(h - 1, y1 - 4);
+
+        const coloredPixels = [];
+        const coloredGrid = new Uint8Array(w * h);
+        for (let y = ey0; y <= ey1; y++) {
+            const rowOffset = y * w * 4;
+            for (let x = ex0; x <= ex1; x++) {
+                const idx = rowOffset + x * 4;
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+                const sat = mx > 0 ? (mx - mn) / mx : 0;
+                // 彩色节点特征：中饱和(>=0.38)且有亮度(>=110)，或中心强白光泛色(sat>=0.28且亮度>=170)
+                // 彻底排除未点亮的暗灰色小圆点(sat≈0.26, mx≈100)与背景噪点
+                const isColored = (sat >= 0.38 && mx >= 110) || (sat >= 0.28 && mx >= 170);
+                if (isColored) {
+                    coloredPixels.push([x, y]);
+                    coloredGrid[y * w + x] = 1;
+                }
+            }
+        }
+
+        // BFS 聚类
+        const visited = new Uint8Array(w * h);
+        const clusters = [];
+        for (const [x, y] of coloredPixels) {
+            const pIdx = y * w + x;
+            if (visited[pIdx]) continue;
+            visited[pIdx] = 1;
+            const q = [[x, y]];
+            const grp = [];
+            let qHead = 0;
+            while (qHead < q.length) {
+                const [cx, cy] = q[qHead++];
+                grp.push([cx, cy]);
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        const nx = cx + dx, ny = cy + dy;
+                        if (nx < ex0 || nx > ex1 || ny < ey0 || ny > ey1) continue;
+                        const nIdx = ny * w + nx;
+                        if (coloredGrid[nIdx] && !visited[nIdx]) {
+                            visited[nIdx] = 1;
+                            q.push([nx, ny]);
+                        }
+                    }
+                }
+            }
+            if (grp.length >= 50 && grp.length <= 800) clusters.push(grp);
+        }
+
+        const endpoints = {};
+        const seenCellsByColor = new Set();
+        for (const grp of clusters) {
+            let sumX = 0, sumY = 0;
+            for (const [x, y] of grp) { sumX += x; sumY += y; }
+            const cx = sumX / grp.length;
+            const cy = sumY / grp.length;
+
+            const sortedPx = grp.slice().sort((a, b) => {
+                const iA = (a[1] * w + a[0]) * 4;
+                const iB = (b[1] * w + b[0]) * 4;
+                return (data[iB] + data[iB + 1] + data[iB + 2]) - (data[iA] + data[iA + 1] + data[iA + 2]);
+            });
+            const topCount = Math.max(1, Math.floor(grp.length / 4));
+            let rSum = 0, gSum = 0, bSum = 0;
+            for (let i = 0; i < topCount; i++) {
+                const [x, y] = sortedPx[i];
+                const idx = (y * w + x) * 4;
+                rSum += data[idx]; gSum += data[idx + 1]; bSum += data[idx + 2];
+            }
+            const avgR = rSum / topCount, avgG = gSum / topCount, avgB = bSum / topCount;
+            const hue = rgbToHue(avgR, avgG, avgB);
+
+            let bestColor = HUES_REF[0], minHueDiff = 999;
+            for (const c of HUES_REF) {
+                const diff = Math.min(Math.abs(c.hue - hue), 360 - Math.abs(c.hue - hue));
+                if (diff < minHueDiff) { minHueDiff = diff; bestColor = c; }
+            }
+
+            let bestR = 0, bestC = 0, minD = 999999;
+            for (let r = 0; r < gy.length; r++) {
+                for (let c = 0; c < gx.length; c++) {
+                    const d = (gx[c] - cx) ** 2 + (gy[r] - cy) ** 2;
+                    if (d < minD) { minD = d; bestR = r; bestC = c; }
+                }
+            }
+            const cellKey = `${bestColor.name}_${bestR}_${bestC}`;
+            if (!seenCellsByColor.has(cellKey)) {
+                seenCellsByColor.add(cellKey);
+                endpoints[bestColor.name] = endpoints[bestColor.name] || [];
+                endpoints[bestColor.name].push([bestR, bestC]);
+            }
+        }
+
+        return {
+            gx, gy,
+            box: [x0, y0, x1, y1],
+            endpoints
+        };
+    }
+
+    // Flow 求解器：带可达性连通性剪枝 + 远端点优先均衡搜索
+    function solveFlowPuzzle(N, endpoints) {
+        const colors = Object.keys(endpoints);
+        for (const c of colors) {
+            if (endpoints[c].length !== 2) {
+                return { ok: false, error: `颜色【${c}】端点数量为 ${endpoints[c].length}，需恰好2个` };
+            }
+        }
+        const board = new Int8Array(N * N).fill(-1);
+        const ends = {};
+        colors.forEach((c, idx) => {
+            ends[idx] = endpoints[c];
+            for (const [r, col] of endpoints[c]) board[r * N + col] = idx;
+        });
+
+        const dist = {};
+        const colorIds = Object.keys(ends).map(Number);
+        for (const id of colorIds) {
+            const [a, b] = ends[id];
+            dist[id] = Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+        }
+
+        // 远端点优先（解法均匀美观、耗时极短），失败再试近端点优先
+        const orderAttempts = [
+            colorIds.slice().sort((a, b) => dist[b] - dist[a]),
+            colorIds.slice().sort((a, b) => dist[a] - dist[b])
+        ];
+
+        let totalNodes = 0;
+        const LIMIT = 6e6;
+        const reach = new Uint8Array(N * N);
+        const qbuf = new Int32Array(N * N);
+
+        for (const order of orderAttempts) {
+            const workBoard = board.slice();
+            const result = {};
+            let nodes = 0;
+
+            function prune(from) {
+                if (from >= order.length) return true;
+                reach.fill(0);
+                let qn = 0;
+                for (let k = from; k < order.length; k++) {
+                    for (const [r, c] of ends[order[k]]) {
+                        const i = r * N + c;
+                        if (!reach[i]) { reach[i] = 1; qbuf[qn++] = i; }
+                    }
+                }
+                let head = 0;
+                while (head < qn) {
+                    const i = qbuf[head++];
+                    const r = (i / N) | 0, c = i % N;
+                    for (let d = 0; d < 4; d++) {
+                        const nr = r + DIRS[d][0], nc = c + DIRS[d][1];
+                        if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+                        const ni = nr * N + nc;
+                        if (reach[ni] || workBoard[ni] !== -1) continue;
+                        reach[ni] = 1; qbuf[qn++] = ni;
+                    }
+                }
+                for (let i = 0; i < N * N; i++) {
+                    if (workBoard[i] === -1 && !reach[i]) return false;
+                }
+                return true;
+            }
+
+            function search(idx) {
+                if (++nodes > LIMIT) return false;
+                if (idx === order.length) {
+                    for (let i = 0; i < N * N; i++) if (workBoard[i] === -1) return false;
+                    return true;
+                }
+                const id = order[idx];
+                const [a, b] = ends[id];
+                const path = [a];
+                const onPath = new Uint8Array(N * N);
+                onPath[a[0] * N + a[1]] = 1;
+
+                function walk(r, c) {
+                    for (let d = 0; d < 4; d++) {
+                        const nr = r + DIRS[d][0], nc = c + DIRS[d][1];
+                        if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+                        const ni = nr * N + nc;
+                        if (nr === b[0] && nc === b[1]) {
+                            path.push([nr, nc]);
+                            if (prune(idx + 1)) {
+                                result[id] = path.slice();
+                                if (search(idx + 1)) return true;
+                                delete result[id];
+                            }
+                            path.pop();
+                            continue;
+                        }
+                        if (workBoard[ni] !== -1 || onPath[ni]) continue;
+                        workBoard[ni] = id;
+                        onPath[ni] = 1;
+                        path.push([nr, nc]);
+                        if (prune(idx)) {
+                            if (walk(nr, nc)) return true;
+                        }
+                        path.pop();
+                        onPath[ni] = 0;
+                        workBoard[ni] = -1;
+                    }
+                    return false;
+                }
+                return walk(a[0], a[1]);
+            }
+
+            if (search(0)) {
+                totalNodes += nodes;
+                const finalPaths = {};
+                for (const id of colorIds) {
+                    finalPaths[colors[id]] = result[id];
+                }
+                return { ok: true, paths: finalPaths, nodes: totalNodes };
+            }
+            totalNodes += nodes;
+        }
+
+        return { ok: false, error: `已遍历 ${totalNodes} 个搜索节点，当前端点配置无满盘连线解` };
+    }
+
+    // 在 Canvas 上绘制原图叠加高光发光走线
+    function renderSolutionCanvas(img, gx, gy, paths) {
+        solverCanvas.width = img.width;
+        solverCanvas.height = img.height;
+        solverCtx.drawImage(img, 0, 0);
+
+        if (!paths) return;
+
+        // 路径外发光 + 主线
+        for (const [colorName, pts] of Object.entries(paths)) {
+            const hex = COLOR_MAP[colorName] || '#ffffff';
+            const screenPts = pts.map(([r, c]) => [gx[c], gy[r]]);
+
+            // 外光晕
+            solverCtx.save();
+            solverCtx.lineCap = 'round';
+            solverCtx.lineJoin = 'round';
+            solverCtx.strokeStyle = hex;
+            solverCtx.globalAlpha = 0.28;
+            solverCtx.lineWidth = 32;
+            solverCtx.beginPath();
+            screenPts.forEach(([x, y], i) => {
+                if (i === 0) solverCtx.moveTo(x, y);
+                else solverCtx.lineTo(x, y);
+            });
+            solverCtx.stroke();
+
+            // 内核主线
+            solverCtx.globalAlpha = 0.95;
+            solverCtx.lineWidth = 14;
+            solverCtx.beginPath();
+            screenPts.forEach(([x, y], i) => {
+                if (i === 0) solverCtx.moveTo(x, y);
+                else solverCtx.lineTo(x, y);
+            });
+            solverCtx.stroke();
+
+            // 起止端点双环高亮
+            for (const [x, y] of [screenPts[0], screenPts[screenPts.length - 1]]) {
+                solverCtx.beginPath();
+                solverCtx.arc(x, y, 16, 0, Math.PI * 2);
+                solverCtx.fillStyle = hex;
+                solverCtx.fill();
+                solverCtx.lineWidth = 3.5;
+                solverCtx.strokeStyle = '#ffffff';
+                solverCtx.stroke();
+            }
+            solverCtx.restore();
+        }
+    }
+
+    function renderSolutionDetails(paths, ms, nodes) {
+        const colors = Object.keys(paths);
+        let totalCells = 0;
+        colors.forEach(c => { totalCells += paths[c].length; });
+
+        pathsContainer.innerHTML = colors.map(c => {
+            const pts = paths[c];
+            const hex = COLOR_MAP[c] || '#f0c060';
+            const start = pts[0], end = pts[pts.length - 1];
+            const stepsStr = pts.map(([r, col]) => `(${r + 1},${col + 1})`).join(' → ');
+            return `
+            <div class="path-card">
+                <div class="path-head">
+                    <span class="path-title">
+                        <span class="path-color-dot" style="background:${hex}; box-shadow:0 0 8px ${hex};"></span>
+                        <span style="color:${hex};">${c}色连线</span>
+                    </span>
+                    <span class="path-meta">${pts.length} 格 (起点 行${start[0] + 1}列${start[1] + 1} → 终点 行${end[0] + 1}列${end[1] + 1})</span>
+                </div>
+                <div class="path-steps">
+                    ${stepsStr}
+                </div>
+            </div>`;
+        }).join('');
+
+        btnCopy.disabled = false;
+        btnReSolve.disabled = false;
+    }
+
+    async function processSolverImage(img) {
+        updateSolverStatus('working', '正在分析棋盘...', '正在扫描深蓝灰底色与网格格心亮点...');
+        dropzone.style.display = 'none';
+        canvasWrapper.style.display = 'block';
+
+        // 预渲染原图
+        solverCanvas.width = img.width;
+        solverCanvas.height = img.height;
+        solverCtx.drawImage(img, 0, 0);
+
+        await new Promise(r => setTimeout(r, 40));
+
+        try {
+            const analyzed = analyzeImage(img);
+            solverState.currentImg = img;
+            solverState.gridX = analyzed.gx;
+            solverState.gridY = analyzed.gy;
+            solverState.endpoints = analyzed.endpoints;
+
+            const detectedCount = Object.keys(analyzed.endpoints).length;
+            if (detectedCount === 0) {
+                updateSolverStatus('error', '未识别到彩色端点', '请确保截图包含游戏中的解阵网格');
+                showToast('未识别到彩色端点，请检查截图', 'error');
+                return;
+            }
+
+            updateSolverStatus('working', '端点识别完成', `已识别到 ${detectedCount} 组颜色，正在求解最优满盘连线...`);
+            await new Promise(r => setTimeout(r, 20));
+
+            const t0 = performance.now();
+            const res = solveFlowPuzzle(7, analyzed.endpoints);
+            const ms = (performance.now() - t0).toFixed(1);
+
+            if (!res.ok) {
+                updateSolverStatus('error', '求解受阻', res.error);
+                showToast(res.error, 'error');
+                return;
+            }
+
+            solverState.solution = res;
+            solverState.solutionPaths = res.paths;
+            solverState.solutionMs = ms;
+            solverState.solutionNodes = res.nodes;
+
+            renderSolutionCanvas(img, analyzed.gx, analyzed.gy, res.paths);
+            renderSolutionDetails(res.paths, ms, res.nodes);
+            updateSolverStatus('success', '求解成功！49 格全满覆盖', `耗时 ${ms} ms · 搜索 ${res.nodes} 个节点`);
+            showToast(`解阵完成！已覆盖全部 49 个节点`, 'success');
+        } catch (err) {
+            console.error('解阵处理异常:', err);
+            updateSolverStatus('error', '识别异常', err.message);
+            showToast('识别出现异常：' + err.message, 'error');
+        }
+    }
+
+    function loadBlobImage(blob) {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            processSolverImage(img);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            showToast('图片加载失败，请重试', 'error');
+        };
+        img.src = url;
+    }
+
+    // 全局与局部粘贴监听 (Ctrl+V)
+    window.addEventListener('paste', (e) => {
+        const items = e.clipboardData?.items;
+        if (!items || !items.length) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                if (file) {
+                    switchTab('solver');
+                    showToast('已检测到剪贴板截图，正在识别...', 'success');
+                    loadBlobImage(file);
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+    });
+
+    // 拖放上传
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer?.files?.length) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith('image/')) loadBlobImage(file);
+        }
+    });
+    dropzone.addEventListener('click', () => {
+        $('solver-file-input').click();
+    });
+    $('btn-trigger-upload').addEventListener('click', () => {
+        $('solver-file-input').click();
+    });
+    $('solver-file-input').addEventListener('change', (e) => {
+        if (e.target.files?.length) {
+            loadBlobImage(e.target.files[0]);
+            e.target.value = '';
+        }
+    });
+
+    // 载入内置示例图
+    $('btn-load-sample').addEventListener('click', () => {
+        switchTab('solver');
+        showToast('正在载入示例棋盘...', 'success');
+        const img = new Image();
+        img.onload = () => {
+            processSolverImage(img);
+        };
+        img.src = 'data:image/webp;base64,' + SAMPLE_IMAGE_BASE64;
+    });
+
+    // 清空重置
+    $('btn-clear-solver').addEventListener('click', () => {
+        solverState.currentImg = null;
+        solverState.solution = null;
+        solverState.solutionPaths = null;
+        canvasWrapper.style.display = 'none';
+        dropzone.style.display = 'flex';
+        updateSolverStatus('waiting', '等待输入截图', '按 Ctrl+V 粘贴截图或点击上方【载入示例题目】');
+        pathsContainer.innerHTML = `
+            <div class="empty-state" style="padding:28px 10px;">
+                <i class="fas fa-chess-board" style="font-size:2rem; opacity:0.35; margin-bottom:8px; display:block;"></i>
+                <span style="font-size:12.5px;">暂无解题路线，输入截图后自动规划最优拖拽路径</span>
+            </div>`;
+        btnCopy.disabled = true;
+        btnReSolve.disabled = true;
+        showToast('画板已清空', 'success');
+    });
+
+    // 一键复制走法文本
+    btnCopy.addEventListener('click', () => {
+        if (!solverState.solutionPaths) return;
+        const lines = ['【剑网3解阵路线指引】'];
+        for (const [c, pts] of Object.entries(solverState.solutionPaths)) {
+            const stepsStr = pts.map(([r, col]) => `(${r + 1},${col + 1})`).join(' → ');
+            lines.push(`${c}色 (${pts.length}格): ${stepsStr}`);
+        }
+        const fullText = lines.join('\n');
+        navigator.clipboard.writeText(fullText).then(() => {
+            showToast('已复制完整拖拽走法到剪贴板！', 'success');
+        }).catch(() => {
+            showToast('复制失败，请手动在下方框选文本', 'warning');
+        });
+    });
+
+    btnReSolve.addEventListener('click', () => {
+        if (solverState.currentImg) processSolverImage(solverState.currentImg);
+    });
+
+    // ── 3. 初始化启动 ──────────────────────────────────────────
     async function boot() {
         loadPrefs();
         renderFilterChips();
-        bindEvents();
+        bindTimetableEvents();
 
-        // 显示加载状态
-        dom.tableBody.innerHTML = `<tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i>正在加载活动数据...</td></tr>`;
+        // 检查路由 hash
+        if (location.search.includes('auto_sample=1')) {
+            switchTab('solver');
+            setTimeout(() => document.getElementById('btn-load-sample').click(), 300);
+        } else if (location.hash === '#solver') {
+            switchTab('solver');
+        }
 
+        // 拉取名望数据
+        dom.tableBody.innerHTML = `<tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在拉取名望活动数据...</td></tr>`;
         try {
             await loadAllData();
         } catch (err) {
-            console.error('数据加载失败:', err);
-            dom.tableBody.innerHTML = `<tr><td colspan="6" class="error-state"><i class="fas fa-exclamation-triangle"></i>数据加载失败，请检查网络或刷新页面</td></tr>`;
+            console.error('名望数据加载失败:', err);
+            dom.tableBody.innerHTML = `<tr><td colspan="6" class="error-state"><i class="fas fa-exclamation-triangle"></i> 名望数据加载失败，请检查网络或点击刷新</td></tr>`;
             return;
         }
 
         renderAll();
         scheduleRefresh();
-
-        // 每秒更新时间显示
         setInterval(updateTimeDisplay, 1000);
     }
 
