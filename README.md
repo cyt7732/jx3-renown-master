@@ -56,16 +56,10 @@
 
 ```
 jx3-renown-master/
-├── index.html              # 主程序（名望排班 + 解阵求解器单文件，开箱即用）
-├── solver/                 # 解阵小游戏桌面与独立工具包
-│   ├── 截图即解.bat         # 双击直接读取剪贴板截图秒解
-│   ├── 一键求解.bat         # 自动求解最新截图或拖拽求解
-│   ├── auto_solve.py       # 图像分析与 Flow 求解核心
-│   ├── clip.ps1            # 剪贴板识别处理脚本
-│   ├── run.ps1             # 命令行与批处理逻辑
-│   ├── sample.png          # 示例截图
-│   ├── standalone.html     # 独立纯 HTML 版解阵求解器
-│   └── README.md           # 独立工具使用说明
+├── index.html              # 主程序（名望排班 + 解阵求解器一体化单文件，开箱即用）
+├── solver/                 # 解阵辅助资源与独立单页
+│   ├── standalone.html     # 独立纯前端解阵求解器（单页备用）
+│   └── sample.png          # 示例关卡原始截图
 ├── CHANGELOG.md            # 更新日志（详细版）
 ├── RELEASE.md              # 更新日志（简洁版）
 ├── LICENSE-FontAwesome.txt # Font Awesome Free 许可证
