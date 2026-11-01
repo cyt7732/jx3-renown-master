@@ -556,6 +556,7 @@
             gap: 6px;
             font-weight: 600;
             font-size: 0.84rem;
+            white-space: nowrap;
         }
         .time-cell {
             font-family: var(--font-mono);
@@ -1244,11 +1245,13 @@
         '穹野卫': { id: '穹野卫', type: 3, cycle: 180, color: 'qiongye', name: '穹野卫' }
     };
     const ORG_IDS = Object.keys(ORG_CONFIG);
+
     const CACHE_TTL = 30 * 60 * 1000;
     const CACHE_VER = 'v1.2';
     const ICON_BASE = 'https://img.jx3box.com/pve/minimap/minimap_';
     const API_BASE = 'https://cms.jx3box.com/api/cms/game/celebrity?type=';
 
+    // ── DOM refs ──────────────────────────────────────────
     const $ = id => document.getElementById(id);
     const dom = {
         filterGrid: $('filter-grid'),
@@ -1268,99 +1271,119 @@
         tableBadge: $('table-badge'),
     };
 
-    const timetableState = {
-        filterOrgs: new Set(ORG_IDS),
-        timeRange: 60,
-        customTime: null,
-        customExpanded: false,
-        dataLoaded: false,
-        lastFetchTime: null,
+    // ── 状态 ──────────────────────────────────────────────
+    const state = {
         activitiesByOrg: {},
+        selectedOrgs: [...ORG_IDS],
+        timeRange: 60,         // 分钟
+        customTime: null,      // "HH:MM" | null
+        dataLoaded: false,
+        nextRefresh: null,
         refreshTimer: null,
-        nextRefresh: null
+        customExpanded: false,
     };
+
+    // ── 工具函数 ──────────────────────────────────────────
+    const pad = n => String(n).padStart(2, '0');
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const mod = (v, base) => ((v % base) + base) % base;
 
     function safeStorageGet(key) {
         try { return localStorage.getItem(key); }
         catch (e) { console.warn('localStorage读取失败:', e.message); return null; }
     }
     function safeStorageSet(key, value) {
-        try { localStorage.setItem(key, value); }
-        catch (e) { console.warn('localStorage写入失败:', e.message); }
+        try { localStorage.setItem(key, value); return true; }
+        catch (e) { console.warn('localStorage写入失败:', e.message); return false; }
     }
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, ch => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[ch]));
     }
-    function mod(n, m) { return ((n % m) + m) % m; }
     function activityKey(a) {
-        return `${a.map_id}_${a.site}_${a.stage}_${a.time_desc || ''}`;
+        return a.id != null
+            ? `id:${a.id}`
+            : `raw:${a.key || ''}|${a.hour ?? ''}|${a.time ?? ''}|${a.stage || ''}|${a.site || ''}`;
     }
     function renderIcon(icon) {
-        const rawIcon = String(icon ?? '').trim();
-        if (!/^[0-9]+$/.test(rawIcon)) return '';
-        const safeIcon = encodeURIComponent(rawIcon);
-        return `<img class="stage-icon" src="${ICON_BASE}${safeIcon}.png" alt="icon" onerror="this.style.display='none'">`;
+        const safeIcon = String(icon ?? '');
+        if (!/^\d+$/.test(safeIcon)) return '';
+        return `<img src="${ICON_BASE}${safeIcon}.png" class="stage-icon" onerror="this.style.display='none'" alt="" loading="lazy">`;
     }
 
+    /** 获取当前模拟时间 */
     function getNow() {
-        if (timetableState.customTime) return timetableState.customTime;
-        const now = new Date();
-        const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-        return new Date(utc + 8 * 3600000);
+        const d = new Date();
+        if (state.customTime) {
+            const [h, m] = state.customTime.split(':').map(Number);
+            d.setHours(h, m, 0, 0);
+        }
+        return d;
     }
+    /** 当前总分钟数 (0-1439) */
     function nowMinutes() {
-        const d = getNow();
-        return d.getHours() * 60 + d.getMinutes();
+        const n = getNow();
+        return n.getHours() * 60 + n.getMinutes();
     }
 
+    // ── 数据加载 ──────────────────────────────────────────
     function cacheKey(orgId) { return `jx3-renown-timetable-${CACHE_VER}-${orgId}`; }
+
     function getCached(orgId) {
         let raw = safeStorageGet(cacheKey(orgId));
         if (!raw) raw = safeStorageGet(`jx3-celeb-v1.1-${orgId}`);
         if (!raw) return null;
         try {
             const pkg = JSON.parse(raw);
-            if (pkg && Date.now() - pkg.ts < CACHE_TTL && Array.isArray(pkg.data)) return pkg.data;
-        } catch (e) {}
+            if (pkg && Date.now() - pkg.ts < CACHE_TTL && Array.isArray(pkg.data) && pkg.data.length > 0) return pkg.data;
+        } catch (e) { /* ignore */ }
         return null;
     }
+
     function setCache(orgId, data) {
         safeStorageSet(cacheKey(orgId), JSON.stringify({ ts: Date.now(), data }));
     }
 
     async function fetchOrg(orgId, retries = 3) {
+        const cfg = ORG_CONFIG[orgId];
         const cached = getCached(orgId);
         if (cached) return cached;
-        const cfg = ORG_CONFIG[orgId];
-        for (let i = 0; i < retries; i++) {
+
+        for (let i = 1; i <= retries; i++) {
             try {
-                const res = await fetch(`${API_BASE}${cfg.type}`);
+                const res = await fetch(API_BASE + cfg.type);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
-                if (json.code === 200 && Array.isArray(json.data)) {
-                    setCache(orgId, json.data);
-                    return json.data;
+                if (json.code !== 0 && json.code !== 200 && !Array.isArray(json.data)) {
+                    throw new Error(json.msg || 'API error');
                 }
+                const dataList = Array.isArray(json.data) ? json.data : [];
+                setCache(orgId, dataList);
+                return dataList;
             } catch (err) {
-                if (i === retries - 1) {
+                console.warn(`[${orgId}] 第${i}次获取失败:`, err.message);
+                if (i === retries) {
                     const cached = getCached(orgId);
-                    if (cached) return cached;
-                    throw err;
+                    if (cached) { console.log(`[${orgId}] 使用缓存`); return cached; }
+                    return [];
                 }
-                await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+                await new Promise(r => setTimeout(r, 1000 * i));
             }
         }
         return [];
     }
 
+    /** 预处理单个活动：还原绝对偏移量和组织周期偏移 */
     function preprocessActivity(raw, orgId) {
         const cfg = ORG_CONFIG[orgId];
-        const rawOffset = parseInt(raw.time) || 0;
+        let hour = raw.hour || 0;
+        // API数据修正：楚天社c1*序列和云从社y1序列的hour应+1
+        if (orgId === '楚天社' && raw.key && raw.key.startsWith('c1')) hour = (hour + 1) % 24;
+        if (orgId === '云从社' && raw.key === 'y1') hour = (hour + 1) % 24;
+        const rawOffset = hour * 60 + (raw.time || 0);
         return {
             ...raw,
-            orgId,
             rawOffset,
             cycleOffset: mod(rawOffset, cfg.cycle),
         };
@@ -1370,250 +1393,282 @@
         const results = await Promise.all(ORG_IDS.map(id => fetchOrg(id)));
         for (let i = 0; i < ORG_IDS.length; i++) {
             const orgId = ORG_IDS[i];
-            timetableState.activitiesByOrg[orgId] = (results[i] || []).map(a => preprocessActivity(a, orgId));
+            state.activitiesByOrg[orgId] = (results[i] || []).map(a => preprocessActivity(a, orgId));
         }
-        timetableState.dataLoaded = true;
-        timetableState.lastFetchTime = new Date();
+        state.dataLoaded = true;
     }
 
+    // ── 时间引擎 ──────────────────────────────────────────
     function minutesUntil(cycleOffset, currentOffset, cycleLength) {
         return (cycleOffset - currentOffset + cycleLength) % cycleLength;
     }
 
     function findCurrentActivity(activities, currentOffset) {
         if (!activities.length) return null;
-        let best = null;
-        for (const a of activities) {
-            if (a.cycleOffset <= currentOffset) {
-                if (!best || a.cycleOffset > best.cycleOffset) best = a;
-            }
+        const candidates = activities.filter(a => a.cycleOffset <= currentOffset);
+        if (candidates.length === 0) {
+            return activities.reduce((a, b) => a.cycleOffset > b.cycleOffset ? a : b);
         }
-        if (!best) {
-            for (const a of activities) {
-                if (!best || a.cycleOffset > best.cycleOffset) best = a;
-            }
-        }
-        return best;
+        return candidates.reduce((a, b) => a.cycleOffset > b.cycleOffset ? a : b);
     }
 
     function formatDisplayTime(cycleOffset, currentMinutes, cycleLength, isCurrent) {
-        if (isCurrent) return '当前进行中';
-        const currentCyclePos = mod(currentMinutes, cycleLength);
-        const minsLeft = minutesUntil(cycleOffset, currentCyclePos, cycleLength);
-        const absMinutes = mod(currentMinutes + minsLeft, 1440);
-        const h = String(Math.floor(absMinutes / 60)).padStart(2, '0');
-        const m = String(absMinutes % 60).padStart(2, '0');
-        if (minsLeft < 60) return `${h}:${m} <span class="sub">${minsLeft}分钟后</span>`;
-        const leftH = Math.floor(minsLeft / 60);
-        const leftM = minsLeft % 60;
-        return `${h}:${m} <span class="sub">${leftH}小时${leftM > 0 ? leftM + '分' : ''}后</span>`;
+        const currentOffset = currentMinutes % cycleLength;
+        let dist;
+        if (isCurrent) {
+            dist = cycleOffset - currentOffset;
+            if (dist > 0) dist -= cycleLength;
+        } else {
+            dist = minutesUntil(cycleOffset, currentOffset, cycleLength);
+        }
+        let absolute = currentMinutes + dist;
+        absolute = ((absolute % 1440) + 1440) % 1440;
+        return `${pad(Math.floor(absolute / 60))}:${pad(absolute % 60)}`;
     }
 
     function getOrgDisplay(orgId) {
-        const nowMin = nowMinutes();
+        const activities = state.activitiesByOrg[orgId] || [];
+        if (!activities.length) return [];
+
         const cfg = ORG_CONFIG[orgId];
-        const acts = timetableState.activitiesByOrg[orgId] || [];
-        if (!acts.length) return [];
-        const currentCyclePos = mod(nowMin, cfg.cycle);
-        const currentAct = findCurrentActivity(acts, currentCyclePos);
+        const currentMinutes = nowMinutes();
+        const currentOffset = currentMinutes % cfg.cycle;
+        const current = findCurrentActivity(activities, currentOffset);
+
         const results = [];
-        const seenKeys = new Set();
-        if (currentAct) {
-            const key = activityKey(currentAct);
-            seenKeys.add(key);
-            results.push({
-                ...currentAct,
-                timeDisplay: formatDisplayTime(currentAct.cycleOffset, nowMin, cfg.cycle, true),
-                sortKey: -1,
-                isCurrent: true,
-                key
-            });
-        }
-        for (const a of acts) {
-            const key = activityKey(a);
-            if (seenKeys.has(key)) continue;
-            const minsLeft = minutesUntil(a.cycleOffset, currentCyclePos, cfg.cycle);
-            if (minsLeft === 0 && currentAct && a.rawOffset === currentAct.rawOffset) continue;
-            if (minsLeft <= timetableState.timeRange) {
+        const seen = new Set();
+
+        if (current) {
+            const key = `${orgId}|${activityKey(current)}`;
+            if (!seen.has(key)) {
+                seen.add(key);
                 results.push({
-                    ...a,
-                    timeDisplay: formatDisplayTime(a.cycleOffset, nowMin, cfg.cycle, false),
-                    sortKey: minsLeft,
-                    isCurrent: false,
-                    key
+                    ...current,
+                    orgId,
+                    orgColor: cfg.color,
+                    isCurrent: true,
+                    displayTime: formatDisplayTime(current.cycleOffset, currentMinutes, cfg.cycle, true),
+                    sortKey: (() => {
+                        let d = current.cycleOffset - currentOffset;
+                        if (d > 0) d -= cfg.cycle;
+                        return (currentMinutes + d) - 100000;
+                    })(),
                 });
             }
         }
+
+        for (const a of activities) {
+            const key = `${orgId}|${activityKey(a)}`;
+            if (seen.has(key)) continue;
+            const dist = minutesUntil(a.cycleOffset, currentOffset, cfg.cycle);
+            if (dist > 0 && dist <= state.timeRange) {
+                seen.add(key);
+                results.push({
+                    ...a,
+                    orgId,
+                    orgColor: cfg.color,
+                    isCurrent: false,
+                    displayTime: formatDisplayTime(a.cycleOffset, currentMinutes, cfg.cycle, false),
+                    sortKey: dist,
+                });
+            }
+        }
+
         return results;
     }
 
     function getAllDisplayActivities() {
-        let all = [];
-        for (const orgId of ORG_IDS) {
-            if (timetableState.filterOrgs.has(orgId)) {
-                all = all.concat(getOrgDisplay(orgId));
-            }
+        const all = [];
+        for (const orgId of state.selectedOrgs) {
+            all.push(...getOrgDisplay(orgId));
         }
         all.sort((a, b) => a.sortKey - b.sortKey);
         return all;
     }
 
+    // ── 渲染 ──────────────────────────────────────────────
     function renderFilterChips() {
-        dom.filterGrid.innerHTML = '';
-        for (const id of ORG_IDS) {
-            const cfg = ORG_CONFIG[id];
-            const chip = document.createElement('label');
-            chip.className = `filter-chip ${timetableState.filterOrgs.has(id) ? 'active' : ''}`;
-            chip.innerHTML = `
-                <input type="checkbox" value="${id}" ${timetableState.filterOrgs.has(id) ? 'checked' : ''}>
-                <span class="org-dot ${cfg.color}"></span>
-                <span>${cfg.name}</span>
-            `;
-            chip.addEventListener('click', () => {
-                if (timetableState.filterOrgs.has(id)) {
-                    if (timetableState.filterOrgs.size > 1) timetableState.filterOrgs.delete(id);
+        dom.filterGrid.innerHTML = ORG_IDS.map(orgId => {
+            const cfg = ORG_CONFIG[orgId];
+            const active = state.selectedOrgs.includes(orgId);
+            return `
+                <label class="filter-chip ${active ? 'active' : ''}" data-org="${orgId}">
+                    <span class="org-dot ${cfg.color}"></span>
+                    <span>${cfg.name}</span>
+                </label>`;
+        }).join('');
+
+        dom.filterGrid.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                const orgId = chip.dataset.org;
+                if (state.selectedOrgs.includes(orgId)) {
+                    if (state.selectedOrgs.length > 1) {
+                        state.selectedOrgs = state.selectedOrgs.filter(o => o !== orgId);
+                    }
                 } else {
-                    timetableState.filterOrgs.add(id);
+                    state.selectedOrgs.push(orgId);
                 }
-                chip.classList.toggle('active', timetableState.filterOrgs.has(id));
                 savePrefs();
-                renderTable();
+                renderAll();
             });
-            dom.filterGrid.appendChild(chip);
-        }
+        });
     }
 
     function formatRangeLabel(minutes) {
         if (minutes < 60) return `${minutes}分钟`;
-        const h = Math.floor(minutes / 60);
-        const m = minutes % 60;
-        return m > 0 ? `${h}小时${m}分` : `${h}小时`;
+        const h = minutes / 60;
+        if (h === Math.floor(h)) return `${h}小时`;
+        return `${h}小时`;
     }
 
     function renderTable() {
+        if (!state.dataLoaded) return;
+
         const activities = getAllDisplayActivities();
         dom.totalActivities.textContent = activities.length;
+        const currentCount = activities.filter(a => a.isCurrent).length;
+
         if (!activities.length) {
-            dom.tableBody.innerHTML = `<tr><td colspan="6" class="empty-state">当前时间范围内暂无匹配的活动排班</td></tr>`;
-            dom.tableBadge.textContent = '0 项活动';
+            dom.tableBadge.textContent = '无结果';
             dom.tableBadge.className = 'badge badge-wait';
+            dom.tableBody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-search" style="display:block;font-size:1.5rem;margin-bottom:8px;"></i>当前时间范围内暂无匹配的活动排班</td></tr>`;
             return;
         }
-        const currentCount = activities.filter(a => a.isCurrent).length;
+
         dom.tableBadge.innerHTML = currentCount > 0
             ? `<i class="fas fa-dot-circle"></i> ${currentCount} 个进行中 · 共 ${activities.length} 项`
-            : `${activities.length} 项活动`;
+            : `共 ${activities.length} 项`;
         dom.tableBadge.className = `badge ${currentCount > 0 ? 'badge-now' : 'badge-wait'}`;
 
         dom.tableBody.innerHTML = activities.map(a => {
-            const cfg = ORG_CONFIG[a.orgId];
-            return `<tr>
-                <td><span class="org-pill"><span class="org-dot ${cfg.color}"></span>${escapeHtml(a.orgId)}</span></td>
-                <td class="time-cell">${a.timeDisplay}</td>
-                <td>${escapeHtml(a.map_name || '-')}</td>
-                <td><strong>${escapeHtml(a.site || '-')}</strong></td>
-                <td>${renderIcon(a.icon)}${escapeHtml(a.stage || '-')}</td>
-                <td style="color:var(--muted); font-size:0.84rem;">${escapeHtml(a.desc || '-')}</td>
-            </tr>`;
+            const cfg = ORG_CONFIG[a.orgId] || {};
+            const rowStyle = a.isCurrent ? 'background: rgba(240, 192, 96, 0.05);' : '';
+            const statusIcon = a.isCurrent ? '<i class="fas fa-play-circle" style="color:var(--gold);margin-right:4px;"></i>' : '';
+            const icon = renderIcon(a.icon);
+            const timeExtra = a.isCurrent ? ' <span style="font-size:11px;color:var(--gold);font-weight:600;display:block;">进行中</span>' : '';
+            return `
+                <tr style="${rowStyle}">
+                    <td>
+                        <span class="org-pill">
+                            <span class="org-dot ${cfg.color}"></span>
+                            ${escapeHtml(a.orgId)}
+                        </span>
+                    </td>
+                    <td class="time-cell">${statusIcon}${escapeHtml(a.displayTime)}${timeExtra}</td>
+                    <td>${escapeHtml(a.map || '-')}</td>
+                    <td><strong>${escapeHtml(a.site || '-')}</strong></td>
+                    <td>${icon}${escapeHtml(a.stage || '-')}</td>
+                    <td style="color:var(--muted); font-size:0.84rem;">${escapeHtml(a.desc || '-')}</td>
+                </tr>`;
         }).join('');
+
+        dom.lastUpdated.textContent = new Date().toLocaleTimeString('zh-CN');
     }
 
     function updateTimeDisplay() {
-        const d = getNow();
-        const h = String(d.getHours()).padStart(2, '0');
-        const m = String(d.getMinutes()).padStart(2, '0');
-        const s = String(d.getSeconds()).padStart(2, '0');
-        dom.currentTime.textContent = `${h}:${m}:${s}${timetableState.customTime ? ' (测试)' : ''}`;
-
-        if (timetableState.lastFetchTime) {
-            const lh = String(timetableState.lastFetchTime.getHours()).padStart(2, '0');
-            const lm = String(timetableState.lastFetchTime.getMinutes()).padStart(2, '0');
-            const ls = String(timetableState.lastFetchTime.getSeconds()).padStart(2, '0');
-            dom.lastUpdated.textContent = `${lh}:${lm}:${ls}`;
-        }
-        if (timetableState.nextRefresh && !timetableState.customTime) {
-            const leftSec = Math.max(0, Math.round((timetableState.nextRefresh - Date.now()) / 1000));
-            dom.nextRefresh.textContent = `${leftSec}秒`;
+        const n = getNow();
+        const ts = n.toLocaleTimeString('zh-CN');
+        if (state.customTime) {
+            dom.currentTime.innerHTML = `${ts} <i class="fas fa-user-clock" style="color:var(--gold);font-size:0.75rem;"></i>`;
+            dom.nextRefresh.textContent = '自定义模式';
         } else {
-            dom.nextRefresh.textContent = '--';
+            dom.currentTime.textContent = ts;
+            if (state.nextRefresh) {
+                const sec = Math.max(0, Math.floor((state.nextRefresh - Date.now()) / 1000));
+                dom.nextRefresh.textContent = `${sec}秒`;
+            }
         }
     }
 
     function renderAll() {
-        updateTimeDisplay();
+        renderFilterChips();
         renderTable();
+        updateTimeDisplay();
     }
 
     function savePrefs() {
         safeStorageSet('jx3-renown-timetable-prefs', JSON.stringify({
-            filterOrgs: Array.from(timetableState.filterOrgs),
-            timeRange: timetableState.timeRange
+            selectedOrgs: state.selectedOrgs,
+            timeRange: state.timeRange,
+        }));
+        safeStorageSet('jx3-prefs', JSON.stringify({
+            selectedOrgs: state.selectedOrgs,
+            timeRange: state.timeRange,
         }));
     }
+
     function loadPrefs() {
         let raw = safeStorageGet('jx3-renown-timetable-prefs');
         if (!raw) raw = safeStorageGet('jx3-prefs');
-        if (!raw) return;
-        try {
-            const p = JSON.parse(raw);
-            if (Array.isArray(p.filterOrgs) && p.filterOrgs.length) {
-                timetableState.filterOrgs = new Set(p.filterOrgs.filter(id => ORG_IDS.includes(id)));
-            }
-            if (typeof p.timeRange === 'number' && p.timeRange >= 30 && p.timeRange <= 1440) {
-                timetableState.timeRange = p.timeRange;
-            }
-        } catch (e) {}
-        dom.rangeSlider.value = timetableState.timeRange;
-        dom.rangeLabel.textContent = formatRangeLabel(timetableState.timeRange);
+        if (raw) {
+            try {
+                const p = JSON.parse(raw);
+                if (Array.isArray(p.selectedOrgs)) {
+                    const selected = p.selectedOrgs.filter(orgId => ORG_IDS.includes(orgId));
+                    state.selectedOrgs = selected.length ? selected : [...ORG_IDS];
+                }
+                if (Number.isFinite(Number(p.timeRange))) {
+                    state.timeRange = clamp(Number(p.timeRange), 30, 1440);
+                }
+            } catch (e) { /* ignore */ }
+        }
+        dom.rangeSlider.value = state.timeRange;
+        dom.rangeLabel.textContent = formatRangeLabel(state.timeRange);
     }
 
     function scheduleRefresh() {
-        if (timetableState.refreshTimer) clearTimeout(timetableState.refreshTimer);
+        if (state.refreshTimer) clearTimeout(state.refreshTimer);
         const now = Date.now();
         const next = new Date(now);
         next.setMinutes(next.getMinutes() + 1, 0, 0);
-        timetableState.nextRefresh = next.getTime();
-        timetableState.refreshTimer = setTimeout(() => {
-            if (!timetableState.customTime) renderAll();
+        state.nextRefresh = next.getTime();
+        state.refreshTimer = setTimeout(() => {
+            if (!state.customTime) renderAll();
             scheduleRefresh();
         }, next - now);
     }
 
     function bindTimetableEvents() {
         dom.rangeSlider.addEventListener('input', () => {
-            timetableState.timeRange = parseInt(dom.rangeSlider.value);
-            dom.rangeLabel.textContent = formatRangeLabel(timetableState.timeRange);
+            state.timeRange = parseInt(dom.rangeSlider.value);
+            dom.rangeLabel.textContent = formatRangeLabel(state.timeRange);
             savePrefs();
             renderAll();
         });
+
         dom.customToggle.addEventListener('click', () => {
-            timetableState.customExpanded = !timetableState.customExpanded;
-            dom.customChevron.classList.toggle('open', timetableState.customExpanded);
-            dom.customBody.classList.toggle('open', timetableState.customExpanded);
+            state.customExpanded = !state.customExpanded;
+            dom.customChevron.classList.toggle('open', state.customExpanded);
+            dom.customBody.classList.toggle('open', state.customExpanded);
         });
+
         dom.customApply.addEventListener('click', () => {
             const v = dom.customInput.value;
-            if (!v) return;
-            const [h, m] = v.split(':').map(Number);
-            const d = new Date();
-            d.setHours(h, m, 0, 0);
-            timetableState.customTime = d;
-            showToast(`已切换至自定义测试时间 ${v}`, 'warning');
-            renderAll();
+            if (v) {
+                state.customTime = v;
+                showToast(`已切换至自定义测试时间 ${v}`, 'warning');
+                renderAll();
+            }
         });
+
         dom.customReset.addEventListener('click', () => {
-            timetableState.customTime = null;
+            state.customTime = null;
             dom.customInput.value = '';
             showToast('已恢复为系统真实时间', 'success');
             renderAll();
         });
+
         $('header-btn-refresh').addEventListener('click', async () => {
             $('header-btn-refresh').disabled = true;
             try {
-                for (const orgId of ORG_IDS) safeStorageSet(cacheKey(orgId), '');
+                for (const orgId of ORG_IDS) {
+                    safeStorageSet(cacheKey(orgId), '');
+                    safeStorageSet(`jx3-celeb-v1.1-${orgId}`, '');
+                }
                 await loadAllData();
                 renderAll();
-                showToast('名望数据已刷新至最新状态', 'success');
+                showToast('名望排班数据已刷新至最新', 'success');
             } catch (e) {
                 showToast('刷新失败，请检查网络', 'error');
             } finally {
