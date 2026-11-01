@@ -499,9 +499,11 @@
             border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background: rgba(0, 0, 0, 0.2);
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
+            min-width: 920px; /* 强制保底宽度，防止窄屏下挤压前5列折行 */
             border-collapse: collapse;
             font-size: 0.88rem;
         }
@@ -513,18 +515,48 @@
             font-size: 0.82rem;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            background: rgba(22, 24, 38, 0.7);
+            background: rgba(22, 24, 38, 0.75);
             border-bottom: 1px solid var(--border);
             white-space: nowrap;
         }
         td {
-            padding: 12px 14px;
+            padding: 10px 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.035);
             vertical-align: middle;
+            line-height: 1.45;
         }
         tr:last-child td { border-bottom: none; }
         tr:hover td {
             background: var(--panel-hover);
+        }
+        /* 前 5 列严格禁止折行，尺寸锁死 */
+        th:nth-child(1), td:nth-child(1) { width: 100px; white-space: nowrap; }
+        th:nth-child(2), td:nth-child(2) { width: 140px; white-space: nowrap; }
+        th:nth-child(3), td:nth-child(3) { width: 100px; white-space: nowrap; }
+        th:nth-child(4), td:nth-child(4) { width: 135px; white-space: nowrap; }
+        th:nth-child(5), td:nth-child(5) { width: 165px; white-space: nowrap; }
+        /* 最后一列“任务指引与描述”自适应铺满剩余，允许优雅折行 */
+        th:nth-child(6), td:nth-child(6) { min-width: 260px; white-space: normal; }
+
+        .time-cell {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .time-now-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            background: rgba(240, 192, 96, 0.16);
+            border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+            line-height: 1.3;
         }
         .badge {
             display: inline-flex;
@@ -1543,10 +1575,10 @@
 
         dom.tableBody.innerHTML = activities.map(a => {
             const cfg = ORG_CONFIG[a.orgId] || {};
-            const rowStyle = a.isCurrent ? 'background: rgba(240, 192, 96, 0.05);' : '';
-            const statusIcon = a.isCurrent ? '<i class="fas fa-play-circle" style="color:var(--gold);margin-right:4px;"></i>' : '';
+            const rowStyle = a.isCurrent ? 'background: rgba(240, 192, 96, 0.055);' : '';
+            const statusIcon = a.isCurrent ? '<i class="fas fa-play-circle" style="color:var(--gold);"></i>' : '';
             const icon = renderIcon(a.icon);
-            const timeExtra = a.isCurrent ? ' <span style="font-size:11px;color:var(--gold);font-weight:600;display:block;">进行中</span>' : '';
+            const timeTag = a.isCurrent ? '<span class="time-now-tag">进行中</span>' : '';
             return `
                 <tr style="${rowStyle}">
                     <td>
@@ -1555,7 +1587,11 @@
                             ${escapeHtml(a.orgId)}
                         </span>
                     </td>
-                    <td class="time-cell">${statusIcon}${escapeHtml(a.displayTime)}${timeExtra}</td>
+                    <td>
+                        <div class="time-cell">
+                            ${statusIcon}<span>${escapeHtml(a.displayTime)}</span>${timeTag}
+                        </div>
+                    </td>
                     <td>${escapeHtml(a.map || '-')}</td>
                     <td><strong>${escapeHtml(a.site || '-')}</strong></td>
                     <td>${icon}${escapeHtml(a.stage || '-')}</td>
