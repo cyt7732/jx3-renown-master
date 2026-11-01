@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.2.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.2.1-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -33,8 +33,8 @@
 
 ### 2. 解阵智能求解器 (Ctrl+V 截图即解)
 - 截图解阵面板后，在网页中直接按 `Ctrl+V` 粘贴即可瞬间算解
-- 纯前端本地视觉识别：自动定位 7×7 棋盘、提取格心亮点与彩色节点
-- 带连通性剪枝的 Flow 算法，毫秒级规划 49 格满盘走法路线
+- 纯前端本地视觉识别：自动定位棋盘并**动态自适应阶数（完美支持 6×6、7×7 等各阶阵盘）**，提取格心亮点与彩色节点
+- 带连通性剪枝的 Flow 算法，毫秒级规划全盘满格走法路线
 - 在原图上高光叠加拖拽路径，提供起止坐标步骤与一键复制功能
 
 ## 追踪组织
@@ -93,9 +93,17 @@ jx3-renown-master/
 
 ## 版本
 
-**v1.2.0** | 2026-11-01
+**v1.2.1** | 2026-11-01
 
 ### 更新记录
+- **解阵求解器阶数自适应升级**：重构网格推算算法，支持依据格心步长动态自适应识别 6×6、7×7 等多种阵盘阶数，彻底解决 6×6 关卡强转 7×7 导致二分图奇偶性冲突报错「无满盘连线解」的问题
+- **发光球体簇聚类增强**：增加近邻距离合并机制，消除发光中心白斑导致的空心甜甜圈局部裂斑与虚假端点判定
+- **界面与提示全面动态化**：求解状态栏、Toast 提示及日志输出全量对齐动态阶数与总格数
+
+---
+
+**v1.2.0** | 2026-11-01
+
 - 界面风格全面升级（国风暗色毛玻璃、微流光背景、Topbar 品牌系统）
 - 新增「解阵」求解器：支持按 `Ctrl + V` 直接粘贴截图即刻自动识别与满盘求解
 - 全量统一项目命名为 `jx3-renown-master`

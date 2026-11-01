@@ -4,6 +4,7 @@ metadata/
 # AI 协作快照
 .alma-snapshots/
 .agents/
+.deepseek-harness/
 
 # 系统垃圾
 .DS_Store
