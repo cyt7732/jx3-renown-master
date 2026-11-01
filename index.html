@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>剑网3名望时间管理大师 | jx3-renown-timetable</title>
+    <title>剑网3名望大师 | Jx3 Renown Master</title>
     <!-- Font Awesome：优先用本地 fontawesome/ 目录，没有就自动回退到 CDN -->
     <link rel="stylesheet" href="fontawesome/css/all.min.css" id="fa-local">
     <script>
@@ -986,15 +986,15 @@
         <!-- ====== Topbar 顶部品牌栏 ====== -->
         <header class="topbar">
             <div class="brand-block">
-                <img class="brand-logo" src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望时间管理大师" />
+                <img class="brand-logo" src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望大师" />
                 <div class="brand-meta">
                     <div class="brand-line">
-                        <h1>剑网3名望时间管理大师</h1>
+                        <h1>剑网3名望大师</h1>
                         <span class="version-pill" title="软件版本：v1.2.0">v1.2.0</span>
                         
                     </div>
                     <div class="brand-sub">
-                        <span class="brand-en">Jx3 Renown Timetable</span>
+                        <span class="brand-en">Jx3 Renown Master</span>
                         <span class="brand-dot">·</span>
                         <span class="brand-author" title="开发者/作者：凌千羽·龙争虎斗">by 凌千羽·龙争虎斗</span>
                         <span class="brand-dot">·</span>
@@ -1016,7 +1016,7 @@
                 <button class="button ghost" type="button" id="header-btn-refresh" title="立即刷新排班数据">
                     <i class="fas fa-sync-alt"></i> 刷新
                 </button>
-                <a class="button ghost" href="https://github.com/cyt7732/jx3-renown-timetable" target="_blank" rel="noopener" title="查看 GitHub 仓库源码">
+                <a class="button ghost" href="https://github.com/cyt7732/jx3-renown-master" target="_blank" rel="noopener" title="查看 GitHub 仓库源码">
                     <i class="fab fa-github"></i> GitHub
                 </a>
             </div>
@@ -1195,7 +1195,7 @@
         <!-- ====== Footer 底部署名 ====== -->
         <footer class="footer">
             <div class="ver">
-                <span class="brand-en">Jx3 Renown Timetable</span> v1.2.0 | 2026-11-01
+                <span class="brand-en">Jx3 Renown Master</span> v1.2.0 | 2026-11-01
             </div>
             <div class="copy">
                 &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
@@ -1210,7 +1210,7 @@
 
     <script>
     /* ================================================================
-       jx3-renown-timetable v1.2.0
+       Jx3 Renown Master (jx3-renown-master) v1.2.0
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */
@@ -1363,10 +1363,11 @@
     }
 
     // ── 数据加载 ──────────────────────────────────────────
-    function cacheKey(orgId) { return `jx3-renown-timetable-${CACHE_VER}-${orgId}`; }
+    function cacheKey(orgId) { return `jx3-renown-master-${CACHE_VER}-${orgId}`; }
 
     function getCached(orgId) {
         let raw = safeStorageGet(cacheKey(orgId));
+        if (!raw) raw = safeStorageGet(`jx3-renown-timetable-v1.2-${orgId}`);
         if (!raw) raw = safeStorageGet(`jx3-celeb-v1.1-${orgId}`);
         if (!raw) return null;
         try {
@@ -1627,6 +1628,10 @@
     }
 
     function savePrefs() {
+        safeStorageSet('jx3-renown-master-prefs', JSON.stringify({
+            selectedOrgs: state.selectedOrgs,
+            timeRange: state.timeRange,
+        }));
         safeStorageSet('jx3-renown-timetable-prefs', JSON.stringify({
             selectedOrgs: state.selectedOrgs,
             timeRange: state.timeRange,
@@ -1638,7 +1643,8 @@
     }
 
     function loadPrefs() {
-        let raw = safeStorageGet('jx3-renown-timetable-prefs');
+        let raw = safeStorageGet('jx3-renown-master-prefs');
+        if (!raw) raw = safeStorageGet('jx3-renown-timetable-prefs');
         if (!raw) raw = safeStorageGet('jx3-prefs');
         if (raw) {
             try {

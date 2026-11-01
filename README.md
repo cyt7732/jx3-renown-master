@@ -1,17 +1,17 @@
 <div align="center">
 
-<img src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望时间管理大师 Logo" width="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);" />
+<img src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望大师 Logo" width="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);" />
 
-# 剑网3名望时间管理大师
+# 剑网3名望大师
 
 名望排班实时追踪与解阵连线求解辅助工坊
 
-[![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-timetable/)
-[![Release](https://img.shields.io/badge/Release-v1.2.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-timetable/releases)
+[![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
-[![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-timetable)
+[![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
-👉 **[点击直接在线使用 (GitHub Pages)](https://cyt7732.github.io/jx3-renown-timetable/)**
+👉 **[点击直接在线使用 (GitHub Pages)](https://cyt7732.github.io/jx3-renown-master/)**
 
 *作者：凌千羽 · 龙争虎斗*
 
@@ -19,7 +19,7 @@
 
 ---
 
-# 剑网3名望时间管理大师 (`jx3-renown-timetable`)
+# 剑网3名望大师 (`jx3-renown-master`)
 
 实时追踪剑网3四大名望组织活动排班，并集成「解阵」智能图像识别与连线求解助手。
 
@@ -55,7 +55,7 @@
 ## 文件结构
 
 ```
-jx3-renown-timetable/
+jx3-renown-master/
 ├── index.html              # 主程序（名望排班 + 解阵求解器单文件）
 ├── CHANGELOG.md            # 更新日志（详细版）
 ├── RELEASE.md              # 更新日志（简洁版）
@@ -95,7 +95,7 @@ jx3-renown-timetable/
 ### 更新记录
 - 界面风格全面升级（国风暗色毛玻璃、微流光背景、Topbar 品牌系统）
 - 新增「解阵」求解器：支持按 `Ctrl + V` 直接粘贴截图即刻自动识别与满盘求解
-- 全量统一项目命名为 `jx3-renown-timetable`
+- 全量统一项目命名为 `jx3-renown-master`
 - 精简历史副本，单文件便携即开即用
 - 优化 Font Awesome 本地优先与 CDN 回退机制
 
