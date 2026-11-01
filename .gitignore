@@ -9,3 +9,9 @@ metadata/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Tencent Cloud EdgeOne
+.env
+.edgeone/*
+.tef_dist/*
+*.zip

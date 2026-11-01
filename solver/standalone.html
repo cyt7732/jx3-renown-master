@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>解阵 · Flow 连线求解器</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --line:#30363d; --cell:#1c2128;
+    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0%,#1b2430,#0d1117 60%);
+    color:var(--text);font:14px/1.6 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    display:flex;justify-content:center;padding:24px 16px 48px;
+  }
+  .app{width:100%;max-width:760px}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:.5px}
+  h1 small{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+  .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+
+  .layout{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+  .board-box{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.45);position:relative;
+  }
+  canvas{display:block;border-radius:8px;cursor:pointer;touch-action:manipulation}
+
+  .side{flex:1;min-width:230px}
+  .palette{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .sw{
+    width:34px;height:34px;border-radius:9px;border:2px solid transparent;
+    cursor:pointer;position:relative;transition:transform .12s,border-color .12s;
+  }
+  .sw:hover{transform:translateY(-2px)}
+  .sw.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+  .sw .n{
+    position:absolute;right:-4px;top:-6px;font-size:10px;background:#000a;
+    border-radius:8px;padding:0 4px;line-height:14px;color:#fff;
+  }
+  .tool{
+    width:34px;height:34px;border-radius:9px;border:2px solid var(--line);
+    background:var(--cell);color:var(--muted);cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tool.on{border-color:#fff;color:#fff}
+
+  .row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  button{
+    background:var(--cell);color:var(--text);border:1px solid var(--line);
+    border-radius:9px;padding:9px 16px;font-size:13.5px;cursor:pointer;
+    font-family:inherit;transition:.15s;
+  }
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:#1f6feb;border-color:#1f6feb;color:#fff;font-weight:600}
+  button.primary:hover{background:#2b7ff5;color:#fff}
+  button:disabled{opacity:.45;cursor:not-allowed}
+
+  .stat{
+    font-size:12.5px;color:var(--muted);min-height:20px;margin-bottom:10px;
+  }
+  .stat.err{color:#ff7b72}
+  .stat.ok{color:#3fb950}
+
+  .out{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:12.5px;line-height:1.85;white-space:pre-wrap;
+    font-family:Consolas,"Cascadia Mono",monospace;color:var(--muted);
+    max-height:340px;overflow:auto;
+  }
+  .out b{color:var(--text);font-weight:600}
+  .out .c{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+  .tip{margin-top:14px;font-size:12px;color:#6e7681;line-height:1.8}
+  .tip kbd{background:#21262d;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>解阵 · Flow 连线求解器 <small>剑网三「解阵」同款规则</small></h1>
+  <div class="sub">同色两端连成一条线，所有格子都要被覆盖，线不能交叉。</div>
+
+  <div class="layout">
+    <div class="board-box">
+      <canvas id="cv"></canvas>
+    </div>
+
+    <div class="side">
+      <div class="palette" id="palette"></div>
+      <div class="row">
+        <button class="primary" id="btnSolve">求解</button>
+        <button id="btnClear">清空</button>
+        <button id="btnPreset">载入本次题目</button>
+      </div>
+      <div class="row">
+        <button id="btnDemo">随机演示局</button>
+      </div>
+      <div class="stat" id="stat">点颜色 → 点格子放端点，每个颜色放 2 个。</div>
+      <div class="out" id="out">等待求解…</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <kbd>右键</kbd> 清掉单个格子 · 点已选中的颜色按钮取消选色（变橡皮）<br>
+    求解器走的是完整搜索 + 可达性剪枝，7×7 通常毫秒级出解。
+  </div>
+</div>
+
+<script>
+(() => {
+  const N = 7;
+  const COLORS = [
+    {name:'红', hex:'#ff4d4d'},
+    {name:'黄', hex:'#ffd23f'},
+    {name:'绿', hex:'#3ddc84'},
+    {name:'蓝', hex:'#4da3ff'},
+    {name:'橙', hex:'#ff8c1a'},
+    {name:'紫', hex:'#b06cff'},
+    {name:'青', hex:'#2ee6e6'},
+    {name:'粉', hex:'#ff6bcb'},
+  ];
+  const DIRS = [[-1,0],[1,0],[0,-1],[0,1]];
+
+  // ---- 状态 ----
+  let cell = 56;
+  let dpr = 1;
+  let grid = new Int8Array(N*N).fill(-1);   // 端点：颜色 id 或 -1
+  let paths = null;                          // 求解结果：{colorId: [[r,c],...]}
+  let tool = 0;                              // 当前画笔：颜色 id，-1 = 橡皮
+  let hover = null;
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const statEl = document.getElementById('stat');
+  const outEl = document.getElementById('out');
+
+  // ---- 画布 ----
+  function resize() {
+    const maxW = Math.min(460, window.innerWidth - 150);
+    cell = Math.max(34, Math.floor(maxW / N));
+    dpr = window.devicePixelRatio || 1;
+    const size = cell * N;
+    cv.style.width = size + 'px';
+    cv.style.height = size + 'px';
+    cv.width = size * dpr;
+    cv.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function cellCenter(r, c) {
+    return [c * cell + cell / 2, r * cell + cell / 2];
+  }
+
+  function draw() {
+    const size = cell * N;
+    ctx.clearRect(0, 0, size, size);
+
+    // 背景格子
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        ctx.fillStyle = (hover && hover[0] === r && hover[1] === c) ? '#232c38' : '#1c2128';
+        ctx.fillRect(c*cell + 1, r*cell + 1, cell - 2, cell - 2);
+      }
+    }
+    // 网格线
+    ctx.strokeStyle = '#2b333d';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= N; i++) {
+      ctx.beginPath(); ctx.moveTo(i*cell, 0); ctx.lineTo(i*cell, size); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i*cell); ctx.lineTo(size, i*cell); ctx.stroke();
+    }
+
+    // 端点小圆点（空格子中心）
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        if (grid[r*N+c] >= 0) continue;
+        const [x, y] = cellCenter(r, c);
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(2.5, cell * 0.055), 0, Math.PI*2);
+        ctx.fillStyle = '#39424e';
+        ctx.fill();
+      }
+    }
+
+    // 路径
+    if (paths) {
+      for (const k in paths) {
+        const id = +k;
+        const p = paths[k];
+        if (!p || p.length < 2) continue;
+        const col = COLORS[id % COLORS.length].hex;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        // 外发光
+        ctx.strokeStyle = col + '44';
+        ctx.lineWidth = cell * 0.42;
+        strokePath(p);
+        // 主线
+        ctx.strokeStyle = col;
+        ctx.lineWidth = cell * 0.26;
+        strokePath(p);
+      }
+    }
+
+    // 端点圆
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        const id = grid[r*N+c];
+        if (id < 0) continue;
+        const [x, y] = cellCenter(r, c);
+        const col = COLORS[id % COLORS.length].hex;
+        ctx.beginPath();
+        ctx.arc(x, y, cell * 0.17, 0, Math.PI*2);
+        ctx.fillStyle = col;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, cell * 0.09, 0, Math.PI*2);
+        ctx.fillStyle = '#0d1117';
+        ctx.fill();
+      }
+    }
+  }
+
+  function strokePath(p) {
+    ctx.beginPath();
+    for (let i = 0; i < p.length; i++) {
+      const [x, y] = cellCenter(p[i][0], p[i][1]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // ---- 调色板 ----
+  const paletteEl = document.getElementById('palette');
+  COLORS.forEach((c, i) => {
+    const b = document.createElement('div');
+    b.className = 'sw';
+    b.style.background = c.hex;
+    b.dataset.id = i;
+    b.title = c.name;
+    b.innerHTML = '<span class="n">0</span>';
+    b.onclick = () => selectTool(i);
+    paletteEl.appendChild(b);
+  });
+  const eraser = document.createElement('div');
+  eraser.className = 'tool';
+  eraser.textContent = '⌫';
+  eraser.title = '橡皮';
+  eraser.onclick = () => selectTool(-1);
+  paletteEl.appendChild(eraser);
+
+  function selectTool(id) {
+    tool = (tool === id) ? -1 : id;
+    document.querySelectorAll('.sw').forEach(el => {
+      el.classList.toggle('on', +el.dataset.id === tool);
+    });
+    eraser.classList.toggle('on', tool === -1);
+    updateStat();
+  }
+
+  function refreshBadges() {
+    const cnt = {};
+    for (let i = 0; i < N*N; i++) if (grid[i] >= 0) cnt[grid[i]] = (cnt[grid[i]] || 0) + 1;
+    document.querySelectorAll('.sw').forEach(el => {
+      const id = +el.dataset.id;
+      el.querySelector('.n').textContent = cnt[id] || 0;
+      el.style.opacity = (cnt[id] || 0) === 2 ? 1 : .82;
+    });
+  }
+
+  // ---- 交互 ----
+  function hit(ev) {
+    const rect = cv.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    const c = Math.floor(x / cell);
+    const r = Math.floor(y / cell);
+    if (r < 0 || r >= N || c < 0 || c >= N) return null;
+    return [r, c];
+  }
+
+  cv.addEventListener('mousemove', ev => {
+    const h = hit(ev);
+    if (String(h) !== String(hover)) { hover = h; draw(); }
+  });
+  cv.addEventListener('mouseleave', () => { hover = null; draw(); });
+
+  cv.addEventListener('contextmenu', ev => {
+    ev.preventDefault();
+    const h = hit(ev);
+    if (!h) return;
+    grid[h[0]*N + h[1]] = -1;
+    paths = null;
+    draw(); refreshBadges(); updateStat();
+  });
+
+  cv.addEventListener('click', ev => {
+    const h = hit(ev);
+    if (!h) return;
+    const [r, c] = h;
+    const idx = r*N + c;
+
+    if (tool === -1) {
+      grid[idx] = -1;
+    } else {
+      // 该颜色已有 2 个端点时，先清掉最早那个
+      const same = [];
+      for (let i = 0; i < N*N; i++) if (grid[i] === tool) same.push(i);
+      if (same.length >= 2) {
+        grid[same[0]] = -1;
+      }
+      // 点到别的颜色上直接覆盖
+      grid[idx] = (grid[idx] === tool) ? -1 : tool;
+    }
+    paths = null;
+    draw(); refreshBadges(); updateStat();
+  });
+
+  function updateStat(msg, cls) {
+    if (msg) { statEl.textContent = msg; statEl.className = 'stat ' + (cls || ''); return; }
+    statEl.className = 'stat';
+    if (tool === -1) { statEl.textContent = '橡皮模式：点格子清除。'; return; }
+    const cnt = {};
+    for (let i = 0; i < N*N; i++) if (grid[i] >= 0) cnt[grid[i]] = (cnt[grid[i]] || 0) + 1;
+    const bad = Object.keys(cnt).filter(k => cnt[k] !== 2);
+    if (!Object.keys(cnt).length) { statEl.textContent = '点颜色 → 点格子放端点，每个颜色放 2 个。'; return; }
+    if (bad.length) {
+      statEl.textContent = `颜色 ${bad.map(k => COLORS[k].name).join('、')} 端点数量不对（需要各 2 个）`;
+      statEl.className = 'stat err';
+    } else {
+      statEl.textContent = `${Object.keys(cnt).length} 种颜色就绪，可以求解。`;
+    }
+  }
+
+  // ---- 求解器 ----
+  function solveFlow() {
+    const ends = {};
+    for (let i = 0; i < N*N; i++) {
+      const id = grid[i];
+      if (id < 0) continue;
+      (ends[id] = ends[id] || []).push([Math.floor(i / N), i % N]);
+    }
+    const ids = Object.keys(ends).map(Number);
+    if (!ids.length) return {err: '先放端点'};
+    for (const id of ids) {
+      if (ends[id].length !== 2) return {err: `颜色「${COLORS[id].name}」需要正好 2 个端点`};
+    }
+
+    const dist = {};
+    for (const id of ids) {
+      const [a, b] = ends[id];
+      dist[id] = Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
+
+    // 端点远的先解：路径更均衡、实操好画，而且这类谜题通常几毫秒出解；
+    // 万一无解再换近端点优先的顺序兜底。
+    const orders = [
+      ids.slice().sort((a, b) => dist[b] - dist[a]),
+      ids.slice().sort((a, b) => dist[a] - dist[b]),
+    ];
+
+    let totalNodes = 0;
+    for (const order of orders) {
+      const r = runSearch(order, ends, totalNodes);
+      totalNodes += r.nodes;
+      if (r.result) return {result: r.result, nodes: totalNodes};
+      if (r.fatal) return {err: r.err};
+    }
+    return {err: `无解（搜索 ${totalNodes} 个节点）`};
+  }
+
+  function runSearch(order, ends, baseNodes) {
+    const board = new Int8Array(N*N).fill(-1);
+    for (const id of Object.keys(ends).map(Number)) {
+      for (const [r, c] of ends[id]) board[r*N + c] = id;
+    }
+
+    const result = {};
+    let nodes = baseNodes;
+    const LIMIT = 6e6;
+    const reach = new Uint8Array(N*N);
+    const qbuf = new Int32Array(N*N);
+
+    // 剪枝：每个空格必须还能连到某个未完成颜色的端点
+    function prune(from) {
+      if (from >= order.length) return true;
+      reach.fill(0);
+      let qn = 0;
+      for (let k = from; k < order.length; k++) {
+        for (const [r, c] of ends[order[k]]) {
+          const i = r*N + c;
+          if (!reach[i]) { reach[i] = 1; qbuf[qn++] = i; }
+        }
+      }
+      let head = 0;
+      while (head < qn) {
+        const i = qbuf[head++];
+        const r = (i / N) | 0, c = i % N;
+        for (let d = 0; d < 4; d++) {
+          const nr = r + DIRS[d][0], nc = c + DIRS[d][1];
+          if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+          const ni = nr*N + nc;
+          if (reach[ni] || board[ni] !== -1) continue;
+          reach[ni] = 1; qbuf[qn++] = ni;
+        }
+      }
+      for (let i = 0; i < N*N; i++) {
+        if (board[i] === -1 && !reach[i]) return false;
+      }
+      return true;
+    }
+
+    function search(idx) {
+      if (++nodes > LIMIT) { const e = new Error('LIMIT'); e.limit = true; throw e; }
+      if (idx === order.length) {
+        for (let i = 0; i < N*N; i++) if (board[i] === -1) return false;
+        return true;
+      }
+      const id = order[idx];
+      const [a, b] = ends[id];
+      const path = [a];
+      const onPath = new Uint8Array(N*N);
+      onPath[a[0]*N + a[1]] = 1;
+
+      function walk(r, c) {
+        for (let d = 0; d < 4; d++) {
+          const nr = r + DIRS[d][0], nc = c + DIRS[d][1];
+          if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+          const ni = nr*N + nc;
+
+          if (nr === b[0] && nc === b[1]) {
+            path.push([nr, nc]);
+            if (prune(idx + 1)) {
+              result[id] = path.slice();
+              if (search(idx + 1)) return true;
+              delete result[id];
+            }
+            path.pop();
+            continue;
+          }
+          if (board[ni] !== -1 || onPath[ni]) continue;
+
+          board[ni] = id;
+          onPath[ni] = 1;
+          path.push([nr, nc]);
+          if (prune(idx)) {
+            if (walk(nr, nc)) return true;
+          }
+          path.pop();
+          onPath[ni] = 0;
+          board[ni] = -1;
+        }
+        return false;
+      }
+
+      return walk(a[0], a[1]);
+    }
+
+    try {
+      const ok = search(0);
+      if (ok) return {result, nodes};
+      return {nodes};
+    } catch (e) {
+      if (e.limit) return {fatal: true, err: '搜索量过大（>600 万节点），这局可能无解', nodes};
+      throw e;
+    }
+  }
+
+  // ---- 输出 ----
+  function showSolution(res) {
+    const {result, nodes} = res;
+    paths = result;
+    draw();
+
+    const lines = [];
+    lines.push(`<b>解出来了</b> · 搜索 ${nodes} 个节点\n`);
+    const keys = Object.keys(result).map(Number).sort((a, b) => a - b);
+    for (const id of keys) {
+      const p = result[id];
+      const col = COLORS[id % COLORS.length];
+      const arrow = p.map(([r, c]) => `${r+1},${c+1}`).join(' → ');
+      lines.push(`<span class="c" style="background:${col.hex}"></span><b>${col.name}</b>（${p.length} 格）`);
+      lines.push(arrow + '\n');
+    }
+    lines.push('<b>操作顺序</b>：按上面颜色依次拖，每条从第一个坐标拖到最后一个坐标。');
+    outEl.innerHTML = lines.join('\n');
+    updateStat(`求解成功，${Object.keys(result).length} 条线覆盖 ${N*N} 格`, 'ok');
+  }
+
+  // ---- 按钮 ----
+  document.getElementById('btnSolve').onclick = () => {
+    const res = solveFlow();
+    if (res.err) {
+      updateStat(res.err, 'err');
+      outEl.textContent = res.err;
+      return;
+    }
+    showSolution(res);
+  };
+
+  document.getElementById('btnClear').onclick = () => {
+    grid.fill(-1);
+    paths = null;
+    draw(); refreshBadges(); updateStat();
+    outEl.textContent = '等待求解…';
+  };
+
+  // 本次截图那局：黄(4,1)(6,3) 红(4,2)(6,2) 绿(4,5)(7,3) 蓝(5,5)(7,5)
+  document.getElementById('btnPreset').onclick = () => {
+    grid.fill(-1);
+    const put = (id, r, c) => { grid[(r-1)*N + (c-1)] = id; };
+    put(1, 4, 1); put(1, 6, 3);   // 黄
+    put(0, 4, 2); put(0, 6, 2);   // 红
+    put(2, 4, 5); put(2, 7, 3);   // 绿
+    put(3, 5, 5); put(3, 7, 5);   // 蓝
+    paths = null;
+    draw(); refreshBadges(); updateStat();
+    outEl.textContent = '已载入本次题目，点「求解」。';
+  };
+
+  // 随机演示：随机撒 3~4 对端点
+  document.getElementById('btnDemo').onclick = () => {
+    grid.fill(-1);
+    paths = null;
+    const nPairs = 4;
+    const used = new Set();
+    for (let id = 0; id < nPairs; id++) {
+      let placed = 0;
+      while (placed < 2) {
+        const i = Math.floor(Math.random() * N * N);
+        if (used.has(i)) continue;
+        used.add(i);
+        grid[i] = id;
+        placed++;
+      }
+    }
+    draw(); refreshBadges(); updateStat();
+    outEl.textContent = '随机局已生成（不一定有解），点「求解」试试。';
+  };
+
+  window.addEventListener('resize', resize);
+  resize();
+  refreshBadges();
+  updateStat();
+
+  // URL 快捷参数：?preset=1 载入本次题目，&solve=1 自动求解（方便直接分享一局）
+  const qs = new URLSearchParams(location.search);
+  if (qs.has('preset')) document.getElementById('btnPreset').click();
+  if (qs.has('solve')) document.getElementById('btnSolve').click();
+})();
+</script>
+</body>
+</html>
