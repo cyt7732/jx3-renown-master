@@ -1,3 +1,24 @@
+<div align="center">
+
+<img src="https://jx3.xoyo.com/p/zt/2023/10/26/index/favicon-200x200.png" alt="剑网3名望时间管理大师 Logo" width="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);" />
+
+# 剑网3名望时间管理大师
+
+名望排班实时追踪与解阵连线求解辅助工坊
+
+[![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-timetable/)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-timetable/releases)
+[![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
+[![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-timetable)
+
+👉 **[点击直接在线使用 (GitHub Pages)](https://cyt7732.github.io/jx3-renown-timetable/)**
+
+*作者：凌千羽 · 龙争虎斗*
+
+</div>
+
+---
+
 # 剑网3名望时间管理大师 (`jx3-renown-timetable`)
 
 实时追踪剑网3四大名望组织活动排班，并集成「解阵」智能图像识别与连线求解助手。
