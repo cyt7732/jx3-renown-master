@@ -1,0 +1,17 @@
+# Cloudflare Pages / EdgeOne 边缘与浏览器缓存规则
+# 1. HTML 入口页面：保持实时协商，确保发版后即刻获取最新版本
+/
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+# 2. 解阵示例资源与辅助文件：缓存 1 天，后台静默重校验
+/solver/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# 3. 本地图标与字体资产：1 年不可变长效强缓存
+/fontawesome/*
+  Cache-Control: public, max-age=31536000, immutable

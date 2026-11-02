@@ -1210,7 +1210,7 @@
 
     <script>
     /* ================================================================
-       Jx3 Renown Master (jx3-renown-master) v1.2.1
+       Jx3 Renown Master (jx3-renown-master) v1.3.1
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */
@@ -1281,8 +1281,10 @@
     };
     const ORG_IDS = Object.keys(ORG_CONFIG);
 
+    const BASELINE_CELEBRITY_DATA = {"楚天社":[{"id":1,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":0,"stage":"上元灯节·点燃烟花","site":"溪明镇","icon":"8","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再点燃溪明镇上的烟花。","order":0},{"id":2,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":3,"stage":"上元灯节·保护花灯","site":"溪明镇","icon":"6","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再去保护溪明镇的花灯。","order":0},{"id":3,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":6,"stage":"上元灯节·击退黄仁笑","site":"溪明镇","icon":"7","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再击退前来破坏上元灯节的黄叶帮黄仁笑。","order":0},{"id":4,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":10,"stage":"凌天塔·再战凌天","site":"凌天寺","icon":"7","desc":"公共任务：与妙心交谈，再入凌天塔，挑战裘合韧。","order":0},{"id":5,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":14,"stage":"凤凰集·醉酒闹事","site":"蚩首山鬼市","icon":"7","desc":"公共任务：击退凤凰集闹事的高百碗。","order":0},{"id":6,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":17,"stage":"安济善坊·帮助安济坊","site":"凌天寺东","icon":"8","desc":"公共任务：捡拾木材帮忙建设安济坊。","order":0},{"id":7,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":20,"stage":"安济善坊·击败镜栖","site":"凌天寺东","icon":"7","desc":"公共任务：助明善击败前来夺人的青江盟管事镜栖。","order":0},{"id":8,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":22,"stage":"一家独大·安抚工人","site":"溪明镇西","icon":"8","desc":"公共任务：速去帮忙安抚受伤的工人。","order":0},{"id":9,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":26,"stage":"一家独大·物归原主","site":"溪明镇西","icon":"18","desc":"公共任务：速去帮忙散户夺回制瓷材料。","order":0},{"id":10,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":29,"stage":"一家独大·卜家工头","site":"溪明镇西","icon":"7","desc":"公共任务：速去帮散户击败作威作福的卜家工头。","order":0},{"id":11,"key":"c01","map":"晟江","type":"0","hour":0,"time":30,"stage":"檐上君子","site":"黄槲镇","icon":"18","desc":"公共任务：教训屋顶蹲伏的飞贼。","order":0},{"id":12,"key":"c01","map":"晟江","type":"0","hour":0,"time":34,"stage":"深仇大恨","site":"白菰里","icon":"7","desc":"公共任务：击退林司豪。","order":0},{"id":13,"key":"c01","map":"晟江","type":"0","hour":0,"time":38,"stage":"恶霸出浴","site":"白菰里","icon":"7","desc":"公共任务：击退恶霸黄七。","order":0},{"id":14,"key":"c01","map":"晟江","type":"0","hour":0,"time":42,"stage":"护送镖车","site":"白菰里","icon":"9","desc":"公共任务：护送铁血镖局镖车至正觉寺。","order":0},{"id":15,"key":"c01","map":"晟江","type":"0","hour":0,"time":48,"stage":"鱼目混珠","site":"正觉寺","icon":"18","desc":"公共任务：揭穿假和尚的真面目，并将其击退。","order":0},{"id":16,"key":"c01","map":"晟江","type":"0","hour":0,"time":52,"stage":"深仇大恨","site":"白菰里","icon":"7","desc":"公共任务：击退林司豪。","order":0},{"id":17,"key":"c01","map":"晟江","type":"0","hour":0,"time":56,"stage":"恶霸出浴","site":"白菰里","icon":"7","desc":"公共任务：击退恶霸黄七。","order":0},{"id":18,"key":"c10","map":"百溪","type":"0","hour":0,"time":0,"stage":"商家劫难","site":"黄崎港北","icon":"12","desc":"公共任务：帮助商家打跑来收保护费的黄崎帮混混。","order":0},{"id":19,"key":"c10","map":"百溪","type":"0","hour":0,"time":4,"stage":"保护庄稼","site":"镇海阁东北","icon":"8","desc":"公共任务：帮助村民除去农田里的害虫和杂草。","order":0},{"id":20,"key":"c10","map":"百溪","type":"0","hour":0,"time":8,"stage":"祈送吉船","site":"镇海阁东","icon":"8","desc":"公共任务：祈送吉船，获得好运。","order":0},{"id":21,"key":"c10","map":"百溪","type":"0","hour":0,"time":11,"stage":"商家劫难","site":"黄崎港北","icon":"12","desc":"公共任务：帮助商家打跑来收保护费的黄崎帮混混。","order":0},{"id":22,"key":"c10","map":"百溪","type":"0","hour":0,"time":14,"stage":"村长请求","site":"孙氏船厂东南","icon":"6","desc":"公共任务：村长请求你陪同他出村寻找失踪的青年人。","order":0},{"id":23,"key":"c10","map":"百溪","type":"0","hour":0,"time":15,"stage":"村长寻人","site":"孙氏船厂东南","icon":"6","desc":"公共任务：陪同村长出村寻找失踪的青年人。","order":0},{"id":24,"key":"c10","map":"百溪","type":"0","hour":0,"time":22,"stage":"阻止借贷","site":"流木村","icon":"12","desc":"公共任务：阻止青年人在斧斤帮借贷。","order":0},{"id":25,"key":"c10","map":"百溪","type":"0","hour":0,"time":26,"stage":"拯救村民","site":"斧斤帮","icon":"12","desc":"公共任务：拯救被抓在岭安木场当苦力的村民。","order":0},{"id":26,"key":"c10","map":"百溪","type":"0","hour":0,"time":29,"stage":"强敌来阻","site":"斧斤帮","icon":"7","desc":"公共任务：击退雷成。","order":0},{"id":27,"key":"c11","map":"楚州","type":"0","hour":0,"time":30,"stage":"援护山阳","site":"山阳村","icon":"8","desc":"公共任务：击退游兵并帮助山阳村收集物资。","order":0},{"id":28,"key":"c11","map":"楚州","type":"0","hour":0,"time":35,"stage":"保卫难民","site":"末口镇","icon":"6","desc":"公共任务：保卫末口镇难民。","order":0},{"id":29,"key":"c11","map":"楚州","type":"0","hour":0,"time":38,"stage":"为民除害","site":"南辕镇","icon":"12","desc":"公共任务：击退扰民滋事的赌徒和流氓。","order":0},{"id":30,"key":"c11","map":"楚州","type":"0","hour":null,"time":40,"stage":"护送盐车","site":"盐场西","icon":"9","desc":"公共任务：护送盐场的盐车离开。","order":0},{"id":31,"key":"c11","map":"楚州","type":"0","hour":0,"time":45,"stage":"南辕恶霸","site":"南辕镇北","icon":"7","desc":"公共任务：击退曹阳辉。","order":0},{"id":32,"key":"c11","map":"楚州","type":"0","hour":0,"time":50,"stage":"稀世珍宝","site":"永宁寺西","icon":"7","desc":"公共任务：击退徐啸。","order":0},{"id":33,"key":"c11","map":"楚州","type":"0","hour":0,"time":54,"stage":"闯入大营","site":"平陵丘西","icon":"6","desc":"公共任务：协助桑来照一同闯入军营内。","order":0}],"云从社":[{"id":36,"key":"y0","map":"银霜口","type":"1","hour":0,"time":0,"stage":"保全药田","site":"青牛谷","icon":"12","desc":"公共任务：教训夺药匪贼，收集已成熟药材。","order":0},{"id":57,"key":"y0","map":"银霜口","type":"1","hour":0,"time":6,"stage":"寒山钓客","site":"葫芦湖","icon":"301","desc":"公共任务：在葫芦湖附近使用“垂钓”技能钓取小霜鱼，上交给宁小霜。","order":0},{"id":58,"key":"y0","map":"银霜口","type":"1","hour":0,"time":12,"stage":"吞舟巨鳗","site":"葫芦湖","icon":"7","desc":"公共任务：击退葫芦湖巨鳗。","order":0},{"id":37,"key":"y0","map":"银霜口","type":"1","hour":0,"time":16,"stage":"堪舆密谋·平宵小","site":"葫芦湖北","icon":"7","desc":"公共任务：击退韩若冰。","order":0},{"id":38,"key":"y0","map":"银霜口","type":"1","hour":0,"time":20,"stage":"挟持威迫","site":"双峦洞","icon":"6","desc":"公共任务：解救被困的中原武人。","order":0},{"id":39,"key":"y0","map":"银霜口","type":"1","hour":0,"time":26,"stage":"膺惩恶首","site":"双峦洞","icon":"7","desc":"公共任务：清剿武家秘密据点。","order":0},{"id":40,"key":"y0","map":"银霜口","type":"1","hour":0,"time":30,"stage":"打理羊舍","site":"小青峰","icon":"8","desc":"公共任务：清理羊舍的粪便，或者给羊添加食物。","order":0},{"id":41,"key":"y0","map":"银霜口","type":"1","hour":0,"time":35,"stage":"堪舆密谋·诛外寇","site":"小青峰西","icon":"18","desc":"公共任务：驱逐暗行不轨的绳池剑宗弟子。","order":0},{"id":42,"key":"y0","map":"银霜口","type":"1","hour":0,"time":41,"stage":"堪舆密谋·破法阵","site":"双峦洞北","icon":"7","desc":"公共任务：击退崔之槐，破坏阵法。","order":0},{"id":43,"key":"y0","map":"银霜口","type":"1","hour":0,"time":55,"stage":"恶狼为祸","site":"小青峰","icon":"18","desc":"公共任务：击杀狼群。","order":0},{"id":44,"key":"y1","map":"银霜口","type":"1","hour":0,"time":1,"stage":"摸金倒斗","site":"秦氏祖墓","icon":"18","desc":"公共任务：击杀秦氏祖墓外的盗墓贼。","order":0},{"id":45,"key":"y1","map":"银霜口","type":"1","hour":0,"time":6,"stage":"扬武耀威","site":"秦氏祖墓南","icon":"7","desc":"公共任务：与刘细比武。","order":0},{"id":46,"key":"y1","map":"银霜口","type":"1","hour":0,"time":10,"stage":"香火遭劫","site":"秦氏祖墓东南","icon":"9","desc":"公共任务：护送物资车至道观。","order":0},{"id":47,"key":"y1","map":"银霜口","type":"1","hour":0,"time":18,"stage":"新仇旧恨","site":"凉天观东北","icon":"7","desc":"公共任务：击败解兰舟。","order":0},{"id":48,"key":"y1","map":"银霜口","type":"1","hour":0,"time":25,"stage":"因果循环","site":"瑶华峰北","icon":"301","desc":"公共任务：收集被香客放生的乌龟。","order":0},{"id":49,"key":"y1","map":"银霜口","type":"1","hour":0,"time":31,"stage":"松林凶影","site":"七返泉东","icon":"12","desc":"公共任务：镇压躁动不安的野猪。","order":0},{"id":50,"key":"y1","map":"银霜口","type":"1","hour":0,"time":37,"stage":"恶有恶报","site":"瑶华峰东","icon":"7","desc":"公共任务：击败张常心。","order":0},{"id":51,"key":"y1","map":"银霜口","type":"1","hour":0,"time":42,"stage":"豹据一方","site":"玉英谷","icon":"12","desc":"公共任务：击退雪原豹。","order":0},{"id":52,"key":"y1","map":"银霜口","type":"1","hour":0,"time":47,"stage":"患难与共","site":"玉英谷西北","icon":"6","desc":"公共任务：协助费大劲保护费大谷。","order":0},{"id":53,"key":"y8","map":"银霜口","type":"1","hour":2,"time":40,"stage":"恶斗争锋","site":"洞心坪","icon":"7","desc":"公共任务：击退雷阎。","order":0},{"id":55,"key":"y8","map":"银霜口","type":"1","hour":1,"time":41,"stage":"堪舆密谋·退敌首","site":"玉英谷","icon":"7","desc":"公共任务：击退韩清芒。","order":0},{"id":56,"key":"y8","map":"银霜口","type":"1","hour":3,"time":50,"stage":"护送药材","site":"青牛谷","icon":"9","desc":"公共任务：护送药材车。","order":0}],"披风会":[{"id":59,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":0,"stage":"游匪劫粮","site":"玄觉寺东南","icon":"381","desc":"击退游牧民族劫匪","order":0},{"id":73,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":0,"stage":"新劫掠者·一","site":"琼甲寨东","icon":"381","desc":"击退拔悉密部劫掠者","order":0},{"id":87,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":2,"stage":"劫农恶匪·一","site":"那云寨东","icon":"381","desc":"击退那云寨马匪","order":0},{"id":60,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":4,"stage":"守寺护经","site":"玄觉寺","icon":"382","desc":"击退扎西衮、阿咱热、拉吉佳协","order":0},{"id":74,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":4,"stage":"新劫掠者·二","site":"琼甲寨东","icon":"379","desc":"救治因保护货物而受伤的商队护卫","order":0},{"id":88,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":6,"stage":"劫农恶匪·二","site":"那云寨东","icon":"382","desc":"击退格朗","order":0},{"id":61,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":8,"stage":"墓陵引盗","site":"北丘墓","icon":"381","desc":"击退盗墓贼","order":0},{"id":75,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":8,"stage":"险途护航","site":"琼甲寨东南","icon":"384","desc":"护送商队前往伊吾城","order":0},{"id":89,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":10,"stage":"波旬恶众·一","site":"那云寨东北","icon":"381","desc":"击败波旬众，营救被囚禁的僧人","order":0},{"id":62,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":12,"stage":"并赃拿贼","site":"北丘墓","icon":"382","desc":"击退罗一空","order":0},{"id":90,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":14,"stage":"波旬恶众·二","site":"那云寨东北","icon":"382","desc":"击败波旬众首领魔罗","order":0},{"id":63,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":16,"stage":"淳朴民风","site":"高昌城","icon":"382","desc":"击败巴老九","order":0},{"id":91,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":18,"stage":"那云番众·一","site":"那云寨","icon":"381","desc":"击败那云寨马匪和菩提会番僧","order":0},{"id":76,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":18,"stage":"黑心贩子","site":"伊吾城东","icon":"381","desc":"教训恶劣的牲口贩子","order":0},{"id":64,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":22,"stage":"铁窗风味","site":"沸沙狱","icon":"379","desc":"给犯人放饭","order":0},{"id":92,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":22,"stage":"那云番众·二","site":"那云寨","icon":"382","desc":"击败那囊伍云","order":0},{"id":77,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":24,"stage":"心田疗愈","site":"伊吾城","icon":"379","desc":"跟知乐乐坊的客人聊天，让他们开心舒畅","order":0},{"id":65,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":26,"stage":"擒奸讨暴","site":"沸沙狱","icon":"382","desc":"击败凶恶的罪犯","order":0},{"id":78,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":26,"stage":"瓜田风波","site":"伊吾城南","icon":"379","desc":"帮助瓦塔洪除草除虫打理哈密瓜田","order":0},{"id":93,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":26,"stage":"伏击吐蕃","site":"那云寨西北","icon":"381","desc":"协助轶漠军伏击吐蕃士兵","order":0},{"id":94,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":30,"stage":"废土新生","site":"眺海村东","icon":"379","desc":"帮舍里克部族修建房屋","order":0},{"id":79,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":30,"stage":"小心“盐”","site":"陆盐池","icon":"380","desc":"帮盐场工人抵御来抢盐的“盐多必失帮”马匪","order":0},{"id":66,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":30,"stage":"保卫葡萄","site":"葡萄沟","icon":"382","desc":"击退库尔班","order":0},{"id":95,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":34,"stage":"保卫家园·一","site":"眺海村","icon":"381","desc":"帮舍里克部族击退劫掠的吐蕃劫匪","order":0},{"id":80,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":34,"stage":"层层扒皮·一","site":"星星峡西","icon":"379","desc":"披风会的指名委托单，请你到星星兰矿场挖矿","order":0},{"id":67,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":34,"stage":"塞上水贵","site":"葡萄沟","icon":"381","desc":"找出偷水的贼人，教训他们一顿","order":0},{"id":81,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":38,"stage":"层层扒皮·二","site":"星星峡西","icon":"381","desc":"击败星星兰矿场监工以保护被压榨的矿工","order":0},{"id":96,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":38,"stage":"保卫家园·二","site":"眺海村西南","icon":"378","desc":"击退野狼，上交狼皮给丹纳","order":0},{"id":68,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":38,"stage":"避行山隅","site":"不染窟","icon":"384","desc":"保护因洪灾转道天山北麓的商队","order":0},{"id":82,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":42,"stage":"层层扒皮·三","site":"星星峡西","icon":"382","desc":"教训星星兰矿场新上任的管事皮扒周","order":0},{"id":97,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":42,"stage":"愿者上钩","site":"眺海村西南","icon":"378","desc":"在该位置附近使用“垂钓”技能钓取七色鱼，上交给秋山雨。","order":0},{"id":69,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":44,"stage":"墓地穷途","site":"伊吾城西北","icon":"381","desc":"流匪来袭，帮守墓人驱逐流匪","order":0},{"id":98,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":46,"stage":"浑水擒鼍","site":"眺海村西南","icon":"382","desc":"击退蒲昌海巨鳄","order":0},{"id":83,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":46,"stage":"沙蝰残众·一","site":"风砂旧垒","icon":"381","desc":"协助轶漠军清除沙蝰帮马匪","order":0},{"id":70,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":48,"stage":"古酒原料·一","site":"冰川宫西","icon":"378","desc":"浑天蓝请你去天山挖掘赛山草，然后交给他","order":0},{"id":84,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":50,"stage":"沙蝰残众·二","site":"风砂旧垒西北","icon":"382","desc":"击败沙蝰帮首领","order":0},{"id":71,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":52,"stage":"古酒原料·二","site":"冰川宫西","icon":"381","desc":"击败宋家巡山奴","order":0},{"id":85,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":54,"stage":"救治商贾","site":"祆舍西","icon":"379","desc":"救治被劫掠的商贾","order":0},{"id":72,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":56,"stage":"古酒原料·三","site":"冰川宫西","icon":"382","desc":"击退宋氏商行天山总管宋和张","order":0},{"id":86,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":58,"stage":"疏浚渠道","site":"敦煌城西","icon":"379","desc":"清理水渠淤泥","order":0}],"穹野卫":[{"id":114,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":0,"stage":"草坡徙羊","site":"白阳坡西北","icon":"384","desc":"护送牧民赶羊","order":0},{"id":106,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":0,"stage":"运送餐饭","site":"弓月城","icon":"379","desc":"给折罗曼护卫送吃食","order":0},{"id":100,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":3,"stage":"土行诡客","site":"杏花谷西","icon":"382","desc":"击退寅卯","order":0},{"id":107,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":4,"stage":"大公无私","site":"弓月城","icon":"379","desc":"参与弓月城内的纠纷裁决","order":0},{"id":115,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":8,"stage":"白猿袭人","site":"白阳坡西北","icon":"382","desc":"挑战！白猿·苍木尊者","order":0},{"id":126,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":9,"stage":"采蚌于河","site":"白山隘","icon":"378","desc":"在河边采集河蚌并上交至货物处","order":0},{"id":108,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":9,"stage":"舞动弓月","site":"弓月城","icon":"382","desc":"击败叱奴腾","order":0},{"id":127,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":13,"stage":"运蚌于途","site":"白山隘","icon":"384","desc":"跟随送粮队伍混进营地","order":0},{"id":116,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":14,"stage":"摩罗阴诡","site":"白阳坡东北","icon":"382","desc":"击退摩罗道鬼道旗主常诺","order":0},{"id":109,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":14,"stage":"清理书库","site":"弓月城","icon":"379","desc":"帮助骨勒打扫书库","order":0},{"id":128,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":17,"stage":"除患于厨","site":"白山隘","icon":"382","desc":"击败迦罗奢","order":0},{"id":131,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":19,"stage":"净海采药","site":"静海南","icon":"378","desc":"在净海采集伊丽川的净海紫草","order":0},{"id":117,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":20,"stage":"野蜂蜜香","site":"炽俟王帐北","icon":"378","desc":"收集蜂蜜","order":0},{"id":101,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":23,"stage":"重获自由","site":"燧云野","icon":"379","desc":"解救营帐内的奴隶","order":0},{"id":111,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":24,"stage":"炼以百花","site":"静海","icon":"382","desc":"击退百花夫人","order":0},{"id":123,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":24,"stage":"春牧酣饮","site":"炽俟王帐","icon":"379","desc":"参与春日庆典，饮下美酒与牧民一醉方休","order":0},{"id":103,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":29,"stage":"奋起反抗","site":"燧云野西","icon":"381","desc":"击退踏实力战士","order":0},{"id":118,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":29,"stage":"众乐而舞","site":"炽俟王帐西","icon":"379","desc":"和牧民一同跳舞","order":0},{"id":132,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":29,"stage":"净海试剑","site":"静海西","icon":"382","desc":"与赫连玉比武","order":0},{"id":104,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":33,"stage":"报仇雪恨","site":"燧云野西","icon":"382","desc":"击败铁都然","order":0},{"id":112,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":34,"stage":"净海垂钓","site":"静海","icon":"378","desc":"使用\"垂钓\"技能钓取净海白鲑，上交给秋山雨","order":0},{"id":119,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":34,"stage":"临河赛马","site":"炽俟王帐西","icon":"379","desc":"赛马：骑马经过指定点","order":0},{"id":124,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":38,"stage":"冰湖狂刀","site":"鹿眼湖","icon":"382","desc":"击败呼延绝","order":0},{"id":113,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":38,"stage":"海外来客","site":"静海","icon":"382","desc":"击退巨蟹","order":0},{"id":102,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":39,"stage":"水行青龙","site":"燧云野西","icon":"382","desc":"击退张法雷","order":0},{"id":129,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":43,"stage":"驰援商途","site":"燧云野西北","icon":"381","desc":"击退踏实力部劫匪，协助牧民寻回散落的物资。","order":0},{"id":110,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":43,"stage":"牧羊于野","site":"弓月城北","icon":"379","desc":"将羊赶至坡顶的大树旁","order":0},{"id":120,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":44,"stage":"恶徒衅众","site":"衣水原","icon":"382","desc":"击败西域神射手乌骨力","order":0},{"id":130,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":47,"stage":"贼首寻仇","site":"燧云野西北","icon":"382","desc":"击败莫贺都","order":0},{"id":133,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":48,"stage":"星宿突现","site":"弓月城北","icon":"382","desc":"打败星宿宗弟子陆栖云","order":0},{"id":121,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":49,"stage":"哮蛮之力","site":"衣水原北","icon":"381","desc":"和哮蛮勇士切磋","order":0},{"id":122,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":53,"stage":"熊哮山林","site":"衣水原北","icon":"382","desc":"和于勒都丝切磋","order":0},{"id":105,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":53,"stage":"横冲直撞","site":"弓月城南","icon":"382","desc":"弓月城门口有一只牛疯了，快让它停下！","order":0},{"id":134,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":53,"stage":"吐蕃来袭","site":"碛崖牧场","icon":"382","desc":"击退吐蕃先锋噶尔坚","order":0},{"id":99,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":58,"stage":"谷中杂务","site":"杏花谷","icon":"379","desc":"协助杏花谷弟子清理马粪驱赶蚊虫","order":0}]};
+
     const CACHE_TTL = 30 * 60 * 1000;
-    const CACHE_VER = 'v1.2';
+    const CACHE_VER = 'v1.3';
     const ICON_BASE = 'https://img.jx3box.com/pve/minimap/minimap_';
     const API_BASE = 'https://cms.jx3box.com/api/cms/game/celebrity?type=';
 
@@ -1316,6 +1318,8 @@
         nextRefresh: null,
         refreshTimer: null,
         customExpanded: false,
+        dataSource: 'fresh',   // 'fresh' | 'stale' | 'baseline'
+        syncing: false,
     };
 
     // ── 工具函数 ──────────────────────────────────────────
@@ -1362,17 +1366,28 @@
         return n.getHours() * 60 + n.getMinutes();
     }
 
-    // ── 数据加载 ──────────────────────────────────────────
+    // ── 数据加载体系：SWR 本地秒开 + 后台静默探针 + 三层容灾兜底 ─────────
     function cacheKey(orgId) { return `jx3-renown-master-${CACHE_VER}-${orgId}`; }
 
-    function getCached(orgId) {
+    /**
+     * 智能读取本地缓存
+     * @param {string} orgId 组织名称
+     * @param {boolean} allowStale 是否允许返回过期历史缓存（用于断网兜底与SWR首屏秒开）
+     */
+    function getCached(orgId, allowStale = false) {
         let raw = safeStorageGet(cacheKey(orgId));
+        if (!raw) raw = safeStorageGet(`jx3-renown-master-v1.2-${orgId}`);
         if (!raw) raw = safeStorageGet(`jx3-renown-timetable-v1.2-${orgId}`);
         if (!raw) raw = safeStorageGet(`jx3-celeb-v1.1-${orgId}`);
         if (!raw) return null;
         try {
             const pkg = JSON.parse(raw);
-            if (pkg && Date.now() - pkg.ts < CACHE_TTL && Array.isArray(pkg.data) && pkg.data.length > 0) return pkg.data;
+            if (pkg && Array.isArray(pkg.data) && pkg.data.length > 0) {
+                const isFresh = (Date.now() - pkg.ts < CACHE_TTL);
+                if (isFresh || allowStale) {
+                    return { data: pkg.data, ts: pkg.ts, isFresh };
+                }
+            }
         } catch (e) { /* ignore */ }
         return null;
     }
@@ -1381,11 +1396,24 @@
         safeStorageSet(cacheKey(orgId), JSON.stringify({ ts: Date.now(), data }));
     }
 
-    async function fetchOrg(orgId, retries = 3) {
-        const cfg = ORG_CONFIG[orgId];
-        const cached = getCached(orgId);
-        if (cached) return cached;
+    /** 获取最佳可用本地数据（用于首屏 0ms 瞬间渲染） */
+    function getBestLocalData(orgId) {
+        // 1. 优先新鲜缓存
+        const fresh = getCached(orgId, false);
+        if (fresh) return { data: fresh.data, source: 'fresh', ts: fresh.ts };
+        // 2. 其次过期缓存（断网/SWR秒开）
+        const stale = getCached(orgId, true);
+        if (stale) return { data: stale.data, source: 'stale', ts: stale.ts };
+        // 3. 终极兜底：内置 Baseline Snapshot（保证纯新离线环境 100% 可用）
+        if (BASELINE_CELEBRITY_DATA[orgId] && BASELINE_CELEBRITY_DATA[orgId].length > 0) {
+            return { data: BASELINE_CELEBRITY_DATA[orgId], source: 'baseline', ts: 0 };
+        }
+        return { data: [], source: 'empty', ts: 0 };
+    }
 
+    /** 单个组织网络拉取（带超时与重试） */
+    async function fetchOrg(orgId, retries = 2) {
+        const cfg = ORG_CONFIG[orgId];
         for (let i = 1; i <= retries; i++) {
             try {
                 const res = await fetch(API_BASE + cfg.type);
@@ -1395,19 +1423,20 @@
                     throw new Error(json.msg || 'API error');
                 }
                 const dataList = Array.isArray(json.data) ? json.data : [];
-                setCache(orgId, dataList);
-                return dataList;
-            } catch (err) {
-                console.warn(`[${orgId}] 第${i}次获取失败:`, err.message);
-                if (i === retries) {
-                    const cached = getCached(orgId);
-                    if (cached) { console.log(`[${orgId}] 使用缓存`); return cached; }
-                    return [];
+                if (dataList.length > 0) {
+                    setCache(orgId, dataList);
+                    return { ok: true, data: dataList, orgId };
                 }
-                await new Promise(r => setTimeout(r, 1000 * i));
+            } catch (err) {
+                console.warn(`[${orgId}] 第${i}次网络获取失败:`, err.message);
+                if (i < retries) {
+                    await new Promise(r => setTimeout(r, 600 * i));
+                }
             }
         }
-        return [];
+        // 最终失败：安全回退本地旧缓存或 Baseline，绝不返回空
+        const fallback = getBestLocalData(orgId);
+        return { ok: false, data: fallback.data, orgId, isFallback: true };
     }
 
     /** 预处理单个活动：还原绝对偏移量和组织周期偏移 */
@@ -1425,13 +1454,53 @@
         };
     }
 
-    async function loadAllData() {
-        const results = await Promise.all(ORG_IDS.map(id => fetchOrg(id)));
-        for (let i = 0; i < ORG_IDS.length; i++) {
-            const orgId = ORG_IDS[i];
-            state.activitiesByOrg[orgId] = (results[i] || []).map(a => preprocessActivity(a, orgId));
+    /** 首屏本地数据秒开加载：0ms 瞬间点亮排班表格 */
+    function loadInitialLocalData() {
+        let hasStale = false;
+        let hasBaseline = false;
+        let hasFresh = false;
+
+        for (const orgId of ORG_IDS) {
+            const local = getBestLocalData(orgId);
+            state.activitiesByOrg[orgId] = (local.data || []).map(a => preprocessActivity(a, orgId));
+            if (local.source === 'fresh') hasFresh = true;
+            else if (local.source === 'stale') hasStale = true;
+            else if (local.source === 'baseline') hasBaseline = true;
         }
+
+        if (hasBaseline) state.dataSource = 'baseline';
+        else if (hasStale) state.dataSource = 'stale';
+        else state.dataSource = 'fresh';
+
         state.dataLoaded = true;
+        return { hasFresh, hasStale, hasBaseline };
+    }
+
+    /** 后台静默或手动同步远程数据 */
+    async function syncRemoteData({ isManual = false } = {}) {
+        if (state.syncing) return { allOk: false };
+        state.syncing = true;
+        try {
+            const results = await Promise.all(ORG_IDS.map(id => fetchOrg(id)));
+            const allOk = results.every(r => r.ok);
+            const anyOk = results.some(r => r.ok);
+
+            if (anyOk) {
+                for (const r of results) {
+                    if (r.ok && r.data && r.data.length > 0) {
+                        state.activitiesByOrg[r.orgId] = r.data.map(a => preprocessActivity(a, r.orgId));
+                    }
+                }
+                state.dataSource = allOk ? 'fresh' : (anyOk ? 'partial' : state.dataSource);
+                renderAll();
+            }
+            return { allOk, anyOk };
+        } catch (e) {
+            console.warn('远程同步异常:', e);
+            return { allOk: false, anyOk: false };
+        } finally {
+            state.syncing = false;
+        }
     }
 
     // ── 时间引擎 ──────────────────────────────────────────
@@ -1603,7 +1672,10 @@
                 </tr>`;
         }).join('');
 
-        dom.lastUpdated.textContent = new Date().toLocaleTimeString('zh-CN');
+        let updateText = new Date().toLocaleTimeString('zh-CN');
+        if (state.dataSource === 'baseline') updateText += ' (内置基准)';
+        else if (state.dataSource === 'stale') updateText += ' (离线缓存)';
+        dom.lastUpdated.textContent = updateText;
     }
 
     function updateTimeDisplay() {
@@ -1705,19 +1777,22 @@
         });
 
         $('header-btn-refresh').addEventListener('click', async () => {
-            $('header-btn-refresh').disabled = true;
+            const btn = $('header-btn-refresh');
+            btn.disabled = true;
+            showToast('正在向云端拉取最新排班数据...', 'info');
             try {
-                for (const orgId of ORG_IDS) {
-                    safeStorageSet(cacheKey(orgId), '');
-                    safeStorageSet(`jx3-celeb-v1.1-${orgId}`, '');
+                const res = await syncRemoteData({ isManual: true });
+                if (res.allOk) {
+                    showToast('名望排班数据已同步至最新', 'success');
+                } else if (res.anyOk) {
+                    showToast('部分网络请求未响应，已融合更新并保留本地排班', 'warning');
+                } else {
+                    showToast('网络连接受限，已无缝保留本地排班数据', 'warning');
                 }
-                await loadAllData();
-                renderAll();
-                showToast('名望排班数据已刷新至最新', 'success');
             } catch (e) {
-                showToast('刷新失败，请检查网络', 'error');
+                showToast('网络刷新受阻，已保留当前排班', 'warning');
             } finally {
-                $('header-btn-refresh').disabled = false;
+                btn.disabled = false;
             }
         });
     }
@@ -2183,6 +2258,112 @@
         return { ok: false, error: `已遍历 ${totalNodes} 个搜索节点，当前端点配置无满盘连线解` };
     }
 
+    // ── 异步 Flow 求解管理器（Blob Web Worker 优先，主线程透明降级保底） ──
+    let solverWorkerInstance = null;
+    let solverWorkerFailed = false;
+
+    function getSolverWorker() {
+        if (solverWorkerFailed || typeof Worker === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined') {
+            return null;
+        }
+        if (solverWorkerInstance) return solverWorkerInstance;
+        try {
+            const workerScript = `
+                const DIRS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                ${solveFlowPuzzle.toString()}
+                self.onmessage = function(e) {
+                    const { id, N, endpoints } = e.data;
+                    const t0 = performance.now();
+                    try {
+                        const res = solveFlowPuzzle(N, endpoints);
+                        const ms = (performance.now() - t0).toFixed(1);
+                        self.postMessage({ id, ok: true, result: res, ms });
+                    } catch (err) {
+                        self.postMessage({ id, ok: false, error: err.message });
+                    }
+                };
+            `;
+            const blob = new Blob([workerScript], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(blob);
+            const worker = new Worker(workerUrl);
+            URL.revokeObjectURL(workerUrl);
+            solverWorkerInstance = worker;
+            return worker;
+        } catch (e) {
+            console.warn('[解阵求解器] Web Worker 创建受限，透明降级至主线程同步执行:', e.message);
+            solverWorkerFailed = true;
+            return null;
+        }
+    }
+
+    async function solveFlowAsync(N, endpoints) {
+        const worker = getSolverWorker();
+        // 1. 如果 Worker 不可用，直接主线程执行并优雅让出单帧避免阻塞
+        if (!worker) {
+            await new Promise(r => setTimeout(r, 16));
+            const t0 = performance.now();
+            const res = solveFlowPuzzle(N, endpoints);
+            const ms = (performance.now() - t0).toFixed(1);
+            return { ...res, ms, worker: false };
+        }
+
+        // 2. Worker 异步执行（带 12 秒硬超时保护）
+        return new Promise((resolve) => {
+            const reqId = Math.random().toString(36).slice(2);
+            let settled = false;
+
+            const timer = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                console.warn('[解阵求解器] Worker 计算超时，正在降级主线程保底...');
+                try { worker.terminate(); } catch (e) {}
+                solverWorkerInstance = null;
+                const t0 = performance.now();
+                const res = solveFlowPuzzle(N, endpoints);
+                const ms = (performance.now() - t0).toFixed(1);
+                resolve({ ...res, ms, worker: false });
+            }, 12000);
+
+            function handleMsg(e) {
+                if (e.data && e.data.id === reqId) {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    if (e.data.ok) {
+                        resolve({ ...e.data.result, ms: e.data.ms, worker: true });
+                    } else {
+                        resolve({ ok: false, error: e.data.error || 'Worker计算异常', worker: true });
+                    }
+                }
+            }
+
+            function handleErr(err) {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                console.warn('[解阵求解器] Worker 运行异常，自动降级主线程:', err.message);
+                solverWorkerFailed = true;
+                try { worker.terminate(); } catch (e) {}
+                solverWorkerInstance = null;
+                const t0 = performance.now();
+                const res = solveFlowPuzzle(N, endpoints);
+                const ms = (performance.now() - t0).toFixed(1);
+                resolve({ ...res, ms, worker: false });
+            }
+
+            function cleanup() {
+                clearTimeout(timer);
+                worker.removeEventListener('message', handleMsg);
+                worker.removeEventListener('error', handleErr);
+            }
+
+            worker.addEventListener('message', handleMsg);
+            worker.addEventListener('error', handleErr);
+            worker.postMessage({ id: reqId, N, endpoints });
+        });
+    }
+
     // 在 Canvas 上绘制原图叠加高光发光走线
     function renderSolutionCanvas(img, gx, gy, paths) {
         solverCanvas.width = img.width;
@@ -2295,8 +2476,8 @@
             await new Promise(r => setTimeout(r, 20));
 
             const t0 = performance.now();
-            const res = solveFlowPuzzle(N, analyzed.endpoints);
-            const ms = (performance.now() - t0).toFixed(1);
+            const res = await solveFlowAsync(N, analyzed.endpoints);
+            const ms = res.ms || (performance.now() - t0).toFixed(1);
 
             if (!res.ok) {
                 updateSolverStatus('error', '求解受阻', res.error);
@@ -2445,19 +2626,25 @@
             switchTab('solver');
         }
 
-        // 拉取名望数据
-        dom.tableBody.innerHTML = `<tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在拉取名望活动数据...</td></tr>`;
-        try {
-            await loadAllData();
-        } catch (err) {
-            console.error('名望数据加载失败:', err);
-            dom.tableBody.innerHTML = `<tr><td colspan="6" class="error-state"><i class="fas fa-exclamation-triangle"></i> 名望数据加载失败，请检查网络或点击刷新</td></tr>`;
-            return;
-        }
-
+        // SWR 核心流：首屏 0ms 瞬间完成本地装填与呈现（告别白屏等待）
+        const localStatus = loadInitialLocalData();
         renderAll();
         scheduleRefresh();
         setInterval(updateTimeDisplay, 1000);
+
+        // 如果存在过期缓存或使用的是 Baseline 基准包，利用空闲时间后台静默探针同步
+        if (localStatus.hasStale || localStatus.hasBaseline) {
+            console.log(`[名望大师] 首屏已从 ${state.dataSource} 毫秒秒开，正在后台静默探测最新排班...`);
+            setTimeout(() => {
+                syncRemoteData({ isManual: false }).then(res => {
+                    if (res.allOk) {
+                        console.log('[名望大师] 远程排班数据静默同步完成');
+                    } else if (state.dataSource === 'baseline') {
+                        console.log('[名望大师] 当前处于离线/无网环境，持续使用内置基准排班数据');
+                    }
+                });
+            }, 300);
+        }
     }
 
     boot();

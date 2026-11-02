@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.2.1-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.3.1-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -92,6 +92,25 @@ jx3-renown-master/
 - 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
+
+**v1.3.1** | 2026-11-02
+
+### 更新记录
+- **解阵求解器 Blob Web Worker 异步化**：重构核心计算分发，通过运行时内联 Blob Web Worker 将耗时的 Flow 回溯搜索移出主渲染线程，求解过程界面 60fps 丝滑不卡顿
+- **离线与沙箱双模透明降级**：内置完善的回退保底机制，在受限沙箱或本地双击运行（`file://` 协议）遇到 Worker 权限受限时，100% 自动无感降级为主线程保底执行，确保在线版丝滑、离线版绝对稳定
+- **12 秒智能熔断保护**：增加计算超时监控，死局或超长搜索自动安全熔断并释放线程，避免页面假死
+
+---
+
+**v1.3.0** | 2026-11-02
+
+### 更新记录
+- **内置 Baseline 离线排班基准包**：内嵌四大名望组织全量官方排班 Snapshot（130条活动），首次无网冷启动、清空缓存或本地双击 `index.html` 离线使用时 100% 完整可用，真正达成单文件纯离线目标
+- **SWR 毫秒秒开与后台静默刷新**：开启 Stale-While-Revalidate 加载流，本地缓存优先瞬间点亮排班表格（0ms 首屏），后台利用空闲时间静默探测最新排班
+- **彻底修复断网丢弃旧缓存缺陷**：网络请求失败时安全回退本地历史过期缓存或 Baseline，杜绝了原版缓存超期重试失败丢弃旧缓存导致白屏的严重缺陷
+- **补齐边缘与浏览器强缓存配置**：根目录新增 `_headers` 规范配置，精准控制 HTML 实时协商与静态资源长效缓存
+
+---
 
 **v1.2.1** | 2026-11-01
 
