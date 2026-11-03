@@ -302,6 +302,10 @@
             position: sticky;
             top: 24px;
         }
+        @media (max-width: 960px) {
+            /* 单列堆叠时取消吸顶，否则侧栏会与下方滚动内容重叠 */
+            .sidebar { position: static; }
+        }
         .sidebar-card {
             padding: 18px 20px;
         }
@@ -1016,7 +1020,7 @@
                 <div class="brand-meta">
                     <div class="brand-line">
                         <h1>剑网3名望大师</h1>
-                        <span class="version-pill" title="软件版本：v1.3.2">v1.3.2</span>
+                        <span class="version-pill" title="软件版本：v1.3.3">v1.3.3</span>
                         
                     </div>
                     <div class="brand-sub">
@@ -1221,7 +1225,7 @@
         <!-- ====== Footer 底部署名 ====== -->
         <footer class="footer">
             <div class="ver">
-                <span class="brand-en">Jx3 Renown Master</span> v1.3.2 | 2026-11-03
+                <span class="brand-en">Jx3 Renown Master</span> v1.3.3 | 2026-11-03
             </div>
             <div class="copy">
                 &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
@@ -1236,7 +1240,7 @@
 
     <script>
     /* ================================================================
-       Jx3 Renown Master (jx3-renown-master) v1.3.2
+       Jx3 Renown Master (jx3-renown-master) v1.3.3
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */

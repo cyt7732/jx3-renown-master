@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.3.2-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.3.3-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -92,6 +92,13 @@ jx3-renown-master/
 - 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
+
+**v1.3.3** | 2026-11-03
+
+### 更新记录
+- **移动端侧栏重叠修复**：修正 .sidebar 吸顶声明覆盖媒体查询的级联顺序缺陷，窄屏（≤960px）单列堆叠时侧栏不再吸顶，向下滚动不再与排班表内容叠字；桌面端吸顶体验不变
+
+---
 
 **v1.3.2** | 2026-11-03
 
