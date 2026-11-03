@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.3.1-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.3.2-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -92,6 +92,14 @@ jx3-renown-master/
 - 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
+
+**v1.3.2** | 2026-11-03
+
+### 更新记录
+- **BOSS 型任务「可能结束」提示**：金盔图标（`7` 老地图 / `382` 新地图）代表单挑 BOSS 型公共任务，开战满 2 分钟后「进行中」标记自动切换为红色「⚠ 可能结束」，行背景同步转红，避免按表赶到时 BOSS 已被击杀；下一个任务开始后自动回归「进行中」
+- **统计徽标细分**：顶部由「N 个进行中」升级为「N 个进行中 · M 个可能结束 · 共 X 项」
+
+---
 
 **v1.3.1** | 2026-11-02
 

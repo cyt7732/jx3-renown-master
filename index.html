@@ -531,7 +531,7 @@
         }
         /* 前 5 列严格禁止折行，尺寸锁死 */
         th:nth-child(1), td:nth-child(1) { width: 100px; white-space: nowrap; }
-        th:nth-child(2), td:nth-child(2) { width: 155px; white-space: nowrap; }
+        th:nth-child(2), td:nth-child(2) { width: 172px; white-space: nowrap; }
         th:nth-child(3), td:nth-child(3) { width: 100px; white-space: nowrap; }
         th:nth-child(4), td:nth-child(4) { width: 140px; white-space: nowrap; }
         th:nth-child(5), td:nth-child(5) { width: 165px; white-space: nowrap; }
@@ -545,6 +545,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            width: 145px; /* 固定单元格内容宽度，避免状态标签切换时列宽被内容撑开 */
         }
         .time-num {
             font-size: 0.9rem;
@@ -571,14 +572,39 @@
         .time-now-tag i {
             font-size: 10px;
         }
+        /* BOSS 型任务开战 2 分钟后，随时可能已被击杀 */
+        .time-maybe-over {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--red);
+            background: var(--red-soft);
+            border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+            line-height: 1.25;
+            vertical-align: middle;
+        }
+        .time-maybe-over i {
+            font-size: 10px;
+        }
         .badge {
             display: inline-flex;
             align-items: center;
-            padding: 3px 8px;
+            gap: 6px;
+            padding: 3px 10px;
             border-radius: 999px;
             font-size: 0.76rem;
             font-weight: 600;
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .badge-sep {
+            opacity: 0.38;
+            font-weight: 400;
         }
         .badge-now {
             background: rgba(240, 192, 96, 0.2);
@@ -990,7 +1016,7 @@
                 <div class="brand-meta">
                     <div class="brand-line">
                         <h1>剑网3名望大师</h1>
-                        <span class="version-pill" title="软件版本：v1.3.1">v1.3.1</span>
+                        <span class="version-pill" title="软件版本：v1.3.2">v1.3.2</span>
                         
                     </div>
                     <div class="brand-sub">
@@ -1195,7 +1221,7 @@
         <!-- ====== Footer 底部署名 ====== -->
         <footer class="footer">
             <div class="ver">
-                <span class="brand-en">Jx3 Renown Master</span> v1.3.1 | 2026-11-02
+                <span class="brand-en">Jx3 Renown Master</span> v1.3.2 | 2026-11-03
             </div>
             <div class="copy">
                 &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
@@ -1210,7 +1236,7 @@
 
     <script>
     /* ================================================================
-       Jx3 Renown Master (jx3-renown-master) v1.3.1
+       Jx3 Renown Master (jx3-renown-master) v1.3.2
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */
@@ -1287,6 +1313,9 @@
     const CACHE_VER = 'v1.3';
     const ICON_BASE = 'https://img.jx3box.com/pve/minimap/minimap_';
     const API_BASE = 'https://cms.jx3box.com/api/cms/game/celebrity?type=';
+    // 金盔图标 = 单挑 BOSS 型公共任务（击退 / 击败 / 切磋）。开战后约 2 分钟即可被击杀，任务随之结束
+    const BOSS_ICONS = new Set(['7', '382']);
+    const BOSS_SAFE_MINUTES = 2;
 
     // ── DOM refs ──────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -1547,11 +1576,13 @@
             const key = `${orgId}|${activityKey(current)}`;
             if (!seen.has(key)) {
                 seen.add(key);
+                const elapsed = mod(currentOffset - current.cycleOffset, cfg.cycle);
                 results.push({
                     ...current,
                     orgId,
                     orgColor: cfg.color,
                     isCurrent: true,
+                    maybeOver: BOSS_ICONS.has(String(current.icon)) && elapsed >= BOSS_SAFE_MINUTES,
                     displayTime: formatDisplayTime(current.cycleOffset, currentMinutes, cfg.cycle, true),
                     sortKey: (() => {
                         let d = current.cycleOffset - currentOffset;
@@ -1632,7 +1663,8 @@
 
         const activities = getAllDisplayActivities();
         dom.totalActivities.textContent = activities.length;
-        const currentCount = activities.filter(a => a.isCurrent).length;
+        const currentCount = activities.filter(a => a.isCurrent && !a.maybeOver).length;
+        const overCount = activities.filter(a => a.isCurrent && a.maybeOver).length;
 
         if (!activities.length) {
             dom.tableBadge.textContent = '无结果';
@@ -1641,17 +1673,28 @@
             return;
         }
 
-        dom.tableBadge.innerHTML = currentCount > 0
-            ? `<i class="fas fa-dot-circle"></i> ${currentCount} 个进行中 · 共 ${activities.length} 项`
+        const badgeParts = [];
+        if (currentCount > 0) badgeParts.push(`${currentCount} 个进行中`);
+        if (overCount > 0) badgeParts.push(`${overCount} 个可能结束`);
+        if (badgeParts.length > 0) badgeParts.push(`共 ${activities.length} 项`);
+        dom.tableBadge.innerHTML = badgeParts.length > 0
+            ? `<i class="fas fa-dot-circle"></i>` +
+              badgeParts.map(t => `<span>${t}</span>`).join('<span class="badge-sep">·</span>')
             : `共 ${activities.length} 项`;
-        dom.tableBadge.className = `badge ${currentCount > 0 ? 'badge-now' : 'badge-wait'}`;
+        dom.tableBadge.className = `badge ${badgeParts.length > 0 ? 'badge-now' : 'badge-wait'}`;
 
         dom.tableBody.innerHTML = activities.map(a => {
             const cfg = ORG_CONFIG[a.orgId] || {};
-            const rowStyle = a.isCurrent ? 'background: rgba(240, 192, 96, 0.055);' : '';
+            const rowStyle = a.isCurrent
+                ? (a.maybeOver ? 'background: rgba(248, 113, 113, 0.055);' : 'background: rgba(240, 192, 96, 0.055);')
+                : '';
             const icon = renderIcon(a.icon);
             // 时间数字永远排最前，进行中状态与图标紧随时间其后
-            const timeTag = a.isCurrent ? '<span class="time-now-tag"><i class="fas fa-play-circle"></i>进行中</span>' : '';
+            const timeTag = a.isCurrent
+                ? (a.maybeOver
+                    ? '<span class="time-maybe-over" title="BOSS 型任务开战 2 分钟后可能已被击杀"><i class="fas fa-exclamation-triangle"></i>可能结束</span>'
+                    : '<span class="time-now-tag"><i class="fas fa-play-circle"></i>进行中</span>')
+                : '';
             return `
                 <tr style="${rowStyle}">
                     <td>

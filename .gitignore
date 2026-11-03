@@ -6,6 +6,9 @@ metadata/
 .agents/
 .deepseek-harness/
 
+# 图标调试临时目录
+.icon-probe/
+
 # 系统垃圾
 .DS_Store
 Thumbs.db
