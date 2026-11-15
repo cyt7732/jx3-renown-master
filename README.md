@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.3.3-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.4.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -21,15 +21,17 @@
 
 # 剑网3名望大师 (`jx3-renown-master`)
 
-实时追踪剑网3四大名望组织活动排班，并集成「解阵」智能图像识别与连线求解助手。
+实时追踪剑网3五大名望组织活动排班，并集成「解阵」智能图像识别与连线求解助手。
 
 ## 核心功能
 
 ### 1. 名望活动排班
-- 实时追踪楚天社、云从社、披风会、穹野卫活动
+- 实时追踪木鸢社、穹野卫、披风会、云从社、楚天社活动
+- 木鸢社支持「烽火靖世 / 烽火共伐 / 百工秘试」三类玩法独立排班，地图按云州 → 渝州 → 陕州逐轮轮换；烽火共伐开场 4 分钟后自动提示「可能结束」
 - 统一相对偏移时间模型，彻底消除跨日错乱
 - 时间范围滑块可调（30分钟 ~ 24小时），每分钟自动平滑刷新
 - 支持按组织多选筛选、自定义测试时间与活动类型图标
+- 未来活动可点击「提醒」：授权浏览器通知后，提前 1 分钟弹出提醒；再次点击可取消
 
 ### 2. 解阵智能求解器 (Ctrl+V 截图即解)
 - 截图解阵面板后，在网页中直接按 `Ctrl+V` 粘贴即可瞬间算解
@@ -41,10 +43,11 @@
 
 | 组织 | 循环周期 | 地图 |
 |:---|:---|:---|
-| 楚天社 | 2小时 | 烂柯山 → 晟江 → 百溪 → 楚州 |
-| 云从社 | 2小时 | 银霜口 |
-| 披风会 | 3小时 | 河西瀚漠 |
+| 木鸢社 | 1小时（三类玩法独立开启，地图每轮轮换） | 云州 → 渝州 → 陕州 |
 | 穹野卫 | 3小时 | 伊丽川 |
+| 披风会 | 3小时 | 河西瀚漠 |
+| 云从社 | 2小时 | 银霜口 |
+| 楚天社 | 2小时 | 烂柯山 → 晟江 → 百溪 → 楚州 |
 
 ## 使用方法
 
@@ -69,6 +72,7 @@ jx3-renown-master/
 ## 数据来源
 
 - 剑网3 CMS API：`cms.jx3box.com/api/cms/game/celebrity`
+- 木鸢社：无 CMS 排班接口，按游戏内规则本地推算（整点/35分开启 + 三地图逐轮轮换），规则参考 [JX3BOX 木鸢社名望-玩法说明](https://www.jx3box.com/knowledge/view/1904)
 - 图标来自：`img.jx3box.com/pve/minimap/`
 
 ## 技术栈
@@ -92,6 +96,18 @@ jx3-renown-master/
 - 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
+
+**v1.4.0** | 2026-11-15
+
+### 更新记录
+- **木鸢社接入**：新增第五个名望组织「木鸢社」，接入烽火靖世（整点/40分钟）、烽火共伐（35分/最长20分钟）、百工秘试（整点/1小时）三类独立玩法；支持三条玩法并行展示、按 `云州 → 渝州 → 陕州` 逐轮轮换地图，并保留各玩法结算周期说明
+- **烽火共伐 4 分钟风险提示**：参考 BOSS 型任务机制，烽火共伐开场 4 分钟后自动显示红色「可能结束」标签，提示最终将领通常已被击败、结算宝箱仅保留 2 分钟
+- **木鸢社地点与倒计时**：烽火靖世按云州·白草原 / 渝州·玄元观 / 陕州·城南战场显示，烽火共伐显示巴水津等据点；进行中标签直接显示「XX分XX秒」并每秒刷新，百工秘试具体地点直接显示地图名
+- **多玩法并行时间引擎**：为木鸢社增加基于 `duration` 的多活动并行判定，同一组织同一时刻可同时显示多条进行中活动，不再只取最近一条
+- **旧偏好自动补选**：升级后旧版筛选偏好会自动补选木鸢社，无需手动重新勾选
+- **界面调整**：所有名望按逆序排列（木鸢社 → 穹野卫 → 披风会 → 云从社 → 楚天社）；木鸢社主题色改为粉紫 `#f472b6`；倒计时保留播放按钮图标
+
+---
 
 **v1.3.3** | 2026-11-03
 

@@ -360,6 +360,7 @@
         .org-dot.yuncong { background: #66a9ee; box-shadow: 0 0 8px rgba(102, 169, 238, 0.5); }
         .org-dot.pifeng { background: #b06cff; box-shadow: 0 0 8px rgba(176, 108, 255, 0.5); }
         .org-dot.qiongye { background: #f0c060; box-shadow: 0 0 8px rgba(240, 192, 96, 0.5); }
+        .org-dot.muyuan { background: #f472b6; box-shadow: 0 0 8px rgba(244, 114, 182, 0.5); }
 
         .range-row {
             display: flex;
@@ -497,7 +498,7 @@
         }
         table {
             width: 100%;
-            min-width: 920px; /* 强制保底宽度，防止窄屏下挤压前5列折行 */
+            min-width: 1010px; /* 强制保底宽度，防止窄屏下挤压前5列折行 */
             border-collapse: collapse;
             font-size: 0.88rem;
         }
@@ -520,6 +521,7 @@
             line-height: 1.45;
         }
         tr:last-child td { border-bottom: none; }
+        tbody td { height: 62px; }
         tr:hover td {
             background: var(--panel-hover);
         }
@@ -531,6 +533,7 @@
         th:nth-child(5), td:nth-child(5) { width: 165px; white-space: nowrap; }
         /* 最后一列“任务指引与描述”自适应铺满剩余，允许优雅折行 */
         th:nth-child(6), td:nth-child(6) { min-width: 260px; white-space: normal; }
+        th:nth-child(7), td:nth-child(7) { width: 88px; white-space: nowrap; }
 
         .time-cell {
             font-family: var(--font-mono);
@@ -565,6 +568,12 @@
         }
         .time-now-tag i {
             font-size: 10px;
+        }
+        .time-countdown {
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
         }
         /* BOSS 型任务开战 2 分钟后，随时可能已被击杀 */
         .time-maybe-over {
@@ -623,6 +632,33 @@
             font-size: 0.84rem;
             white-space: nowrap;
         }
+        .remind-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .remind-btn i { font-size: 11px; }
+        .remind-btn:hover {
+            color: var(--gold);
+            border-color: rgba(240, 192, 96, 0.45);
+            background: rgba(240, 192, 96, 0.08);
+        }
+        .remind-btn.active {
+            color: var(--gold);
+            border-color: var(--border-active);
+            background: var(--gold-soft);
+        }
+        .remind-cell { text-align: center; }
         
         .stage-icon {
             width: 22px;
@@ -1010,7 +1046,7 @@
                 <div class="brand-meta">
                     <div class="brand-line">
                         <h1>剑网3名望大师</h1>
-                        <span class="version-pill" title="软件版本：v1.3.3">v1.3.3</span>
+                        <span class="version-pill" title="软件版本：v1.4.0">v1.4.0</span>
                         
                     </div>
                     <div class="brand-sub">
@@ -1103,10 +1139,11 @@
                                     <th>具体地点</th>
                                     <th>活动阶段</th>
                                     <th>任务指引与描述</th>
+                                    <th>提醒</th>
                                 </tr>
                             </thead>
                             <tbody id="activities-table">
-                                <tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在拉取名望活动数据...</td></tr>
+                                <tr><td colspan="7" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在拉取名望活动数据...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1206,7 +1243,7 @@
         <!-- ====== Footer 底部署名 ====== -->
         <footer class="footer">
             <div class="ver">
-                <span class="brand-en">Jx3 Renown Master</span> v1.3.3 | 2026-11-03
+                <span class="brand-en">Jx3 Renown Master</span> v1.4.0 | 2026-11-15
             </div>
             <div class="copy">
                 &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
@@ -1221,7 +1258,7 @@
 
     <script>
     /* ================================================================
-       Jx3 Renown Master (jx3-renown-master) v1.3.3
+       Jx3 Renown Master (jx3-renown-master) v1.4.0
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */
@@ -1285,12 +1322,89 @@
 
     // ── 1. 名望排班核心引擎 ────────────────────────────────────
     const ORG_CONFIG = {
-        '楚天社': { id: '楚天社', type: 0, cycle: 120, color: 'chutian', name: '楚天社' },
-        '云从社': { id: '云从社', type: 1, cycle: 120, color: 'yuncong', name: '云从社' },
+        '木鸢社': { id: '木鸢社', type: null, cycle: 180, color: 'muyuan', name: '木鸢社', static: true },
+        '穹野卫': { id: '穹野卫', type: 3, cycle: 180, color: 'qiongye', name: '穹野卫' },
         '披风会': { id: '披风会', type: 2, cycle: 180, color: 'pifeng', name: '披风会' },
-        '穹野卫': { id: '穹野卫', type: 3, cycle: 180, color: 'qiongye', name: '穹野卫' }
+        '云从社': { id: '云从社', type: 1, cycle: 120, color: 'yuncong', name: '云从社' },
+        '楚天社': { id: '楚天社', type: 0, cycle: 120, color: 'chutian', name: '楚天社' }
     };
     const ORG_IDS = Object.keys(ORG_CONFIG);
+
+    // ── 木鸢社：三类玩法独立按小时开启，地图按 云州 → 渝州 → 陕州 轮换 ──
+    // 锚点：2026-11-15 18:45 游戏实况——烽火共伐/百工秘试均在渝州，19:00 烽火靖世将在陕州。
+    // 三类玩法在同一个整点共用同一张地图，因此 18:00 场次的轮换位为「渝州」，按小时 +1 依次推进。
+    const MUYUAN_MAP_ORDER = ['云州', '渝州', '陕州'];
+    const MUYUAN_MAP_ANCHOR_HOUR = 18;
+    const MUYUAN_MAP_ANCHOR_INDEX = 1; // 0=云州 1=渝州 2=陕州
+    const MUYUAN_PLAYTYPES = [
+        {
+            key: 'jingshi',
+            name: '烽火靖世',
+            minute: 0,
+            duration: 40,
+            site: '活动区域',
+            siteByMap: { '云州': '白草原', '渝州': '玄元观', '陕州': '城南战场' },
+            icon: '8',
+            desc: '积攒靖世令开启各档靖世宝箱（每档每日一次）。'
+        },
+        {
+            key: 'gongfa',
+            name: '烽火共伐',
+            minute: 35,
+            duration: 20,
+            maybeOverAfter: 4,
+            maybeOverTitle: '烽火共伐开启 4 分钟后，最终将领通常已被击败，结算宝箱仅保留 2 分钟',
+            site: '活动据点',
+            siteByMap: { '云州': '回纥营地', '渝州': '巴水津', '陕州': '军港码头' },
+            icon: '381',
+            desc: '击败最终将领领取宝箱（宝箱保留2分钟）。'
+        },
+        {
+            key: 'baigong',
+            name: '百工秘试',
+            minute: 0,
+            duration: 60,
+            site: '随机点位',
+            siteFromMap: true,
+            icon: '301',
+            desc: '随机三类玩法各一处，与接引人完成挑战（同点位每轮一次）。'
+        }
+    ];
+
+    function muyuanMapAtHour(hour) {
+        const index = mod(hour - MUYUAN_MAP_ANCHOR_HOUR + MUYUAN_MAP_ANCHOR_INDEX, MUYUAN_MAP_ORDER.length);
+        return MUYUAN_MAP_ORDER[index];
+    }
+
+    /** 生成木鸢社 3 小时循环排班：三种玩法 × 三张地图各一条，小时数决定当日地图位 */
+    function buildMuyuanActivities() {
+        const list = [];
+        let id = 9001;
+        for (const hour of [0, 1, 2]) {
+            const map = muyuanMapAtHour(hour);
+            for (const play of MUYUAN_PLAYTYPES) {
+                list.push({
+                    id: id++,
+                    key: `muyuan-${play.key}-h${hour}`,
+                    map,
+                    type: '4',
+                    hour,
+                    time: play.minute,
+                    stage: play.name,
+                    site: play.siteFromMap ? map : ((play.siteByMap && play.siteByMap[map]) || play.site),
+                    icon: play.icon,
+                    desc: play.desc,
+                    duration: play.duration,
+                    maybeOverAfter: play.maybeOverAfter,
+                    maybeOverTitle: play.maybeOverTitle,
+                    order: play.minute
+                });
+            }
+        }
+        return list;
+    }
+
+    const STATIC_ORG_BUILDERS = { '木鸢社': buildMuyuanActivities };
 
     const BASELINE_CELEBRITY_DATA = {"楚天社":[{"id":1,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":0,"stage":"上元灯节·点燃烟花","site":"溪明镇","icon":"8","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再点燃溪明镇上的烟花。","order":0},{"id":2,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":3,"stage":"上元灯节·保护花灯","site":"溪明镇","icon":"6","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再去保护溪明镇的花灯。","order":0},{"id":3,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":6,"stage":"上元灯节·击退黄仁笑","site":"溪明镇","icon":"7","desc":"公共任务：喝下抱月斋三楼的美酒千里醉，再击退前来破坏上元灯节的黄叶帮黄仁笑。","order":0},{"id":4,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":10,"stage":"凌天塔·再战凌天","site":"凌天寺","icon":"7","desc":"公共任务：与妙心交谈，再入凌天塔，挑战裘合韧。","order":0},{"id":5,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":14,"stage":"凤凰集·醉酒闹事","site":"蚩首山鬼市","icon":"7","desc":"公共任务：击退凤凰集闹事的高百碗。","order":0},{"id":6,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":17,"stage":"安济善坊·帮助安济坊","site":"凌天寺东","icon":"8","desc":"公共任务：捡拾木材帮忙建设安济坊。","order":0},{"id":7,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":20,"stage":"安济善坊·击败镜栖","site":"凌天寺东","icon":"7","desc":"公共任务：助明善击败前来夺人的青江盟管事镜栖。","order":0},{"id":8,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":22,"stage":"一家独大·安抚工人","site":"溪明镇西","icon":"8","desc":"公共任务：速去帮忙安抚受伤的工人。","order":0},{"id":9,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":26,"stage":"一家独大·物归原主","site":"溪明镇西","icon":"18","desc":"公共任务：速去帮忙散户夺回制瓷材料。","order":0},{"id":10,"key":"c00","map":"烂柯山","type":"0","hour":0,"time":29,"stage":"一家独大·卜家工头","site":"溪明镇西","icon":"7","desc":"公共任务：速去帮散户击败作威作福的卜家工头。","order":0},{"id":11,"key":"c01","map":"晟江","type":"0","hour":0,"time":30,"stage":"檐上君子","site":"黄槲镇","icon":"18","desc":"公共任务：教训屋顶蹲伏的飞贼。","order":0},{"id":12,"key":"c01","map":"晟江","type":"0","hour":0,"time":34,"stage":"深仇大恨","site":"白菰里","icon":"7","desc":"公共任务：击退林司豪。","order":0},{"id":13,"key":"c01","map":"晟江","type":"0","hour":0,"time":38,"stage":"恶霸出浴","site":"白菰里","icon":"7","desc":"公共任务：击退恶霸黄七。","order":0},{"id":14,"key":"c01","map":"晟江","type":"0","hour":0,"time":42,"stage":"护送镖车","site":"白菰里","icon":"9","desc":"公共任务：护送铁血镖局镖车至正觉寺。","order":0},{"id":15,"key":"c01","map":"晟江","type":"0","hour":0,"time":48,"stage":"鱼目混珠","site":"正觉寺","icon":"18","desc":"公共任务：揭穿假和尚的真面目，并将其击退。","order":0},{"id":16,"key":"c01","map":"晟江","type":"0","hour":0,"time":52,"stage":"深仇大恨","site":"白菰里","icon":"7","desc":"公共任务：击退林司豪。","order":0},{"id":17,"key":"c01","map":"晟江","type":"0","hour":0,"time":56,"stage":"恶霸出浴","site":"白菰里","icon":"7","desc":"公共任务：击退恶霸黄七。","order":0},{"id":18,"key":"c10","map":"百溪","type":"0","hour":0,"time":0,"stage":"商家劫难","site":"黄崎港北","icon":"12","desc":"公共任务：帮助商家打跑来收保护费的黄崎帮混混。","order":0},{"id":19,"key":"c10","map":"百溪","type":"0","hour":0,"time":4,"stage":"保护庄稼","site":"镇海阁东北","icon":"8","desc":"公共任务：帮助村民除去农田里的害虫和杂草。","order":0},{"id":20,"key":"c10","map":"百溪","type":"0","hour":0,"time":8,"stage":"祈送吉船","site":"镇海阁东","icon":"8","desc":"公共任务：祈送吉船，获得好运。","order":0},{"id":21,"key":"c10","map":"百溪","type":"0","hour":0,"time":11,"stage":"商家劫难","site":"黄崎港北","icon":"12","desc":"公共任务：帮助商家打跑来收保护费的黄崎帮混混。","order":0},{"id":22,"key":"c10","map":"百溪","type":"0","hour":0,"time":14,"stage":"村长请求","site":"孙氏船厂东南","icon":"6","desc":"公共任务：村长请求你陪同他出村寻找失踪的青年人。","order":0},{"id":23,"key":"c10","map":"百溪","type":"0","hour":0,"time":15,"stage":"村长寻人","site":"孙氏船厂东南","icon":"6","desc":"公共任务：陪同村长出村寻找失踪的青年人。","order":0},{"id":24,"key":"c10","map":"百溪","type":"0","hour":0,"time":22,"stage":"阻止借贷","site":"流木村","icon":"12","desc":"公共任务：阻止青年人在斧斤帮借贷。","order":0},{"id":25,"key":"c10","map":"百溪","type":"0","hour":0,"time":26,"stage":"拯救村民","site":"斧斤帮","icon":"12","desc":"公共任务：拯救被抓在岭安木场当苦力的村民。","order":0},{"id":26,"key":"c10","map":"百溪","type":"0","hour":0,"time":29,"stage":"强敌来阻","site":"斧斤帮","icon":"7","desc":"公共任务：击退雷成。","order":0},{"id":27,"key":"c11","map":"楚州","type":"0","hour":0,"time":30,"stage":"援护山阳","site":"山阳村","icon":"8","desc":"公共任务：击退游兵并帮助山阳村收集物资。","order":0},{"id":28,"key":"c11","map":"楚州","type":"0","hour":0,"time":35,"stage":"保卫难民","site":"末口镇","icon":"6","desc":"公共任务：保卫末口镇难民。","order":0},{"id":29,"key":"c11","map":"楚州","type":"0","hour":0,"time":38,"stage":"为民除害","site":"南辕镇","icon":"12","desc":"公共任务：击退扰民滋事的赌徒和流氓。","order":0},{"id":30,"key":"c11","map":"楚州","type":"0","hour":null,"time":40,"stage":"护送盐车","site":"盐场西","icon":"9","desc":"公共任务：护送盐场的盐车离开。","order":0},{"id":31,"key":"c11","map":"楚州","type":"0","hour":0,"time":45,"stage":"南辕恶霸","site":"南辕镇北","icon":"7","desc":"公共任务：击退曹阳辉。","order":0},{"id":32,"key":"c11","map":"楚州","type":"0","hour":0,"time":50,"stage":"稀世珍宝","site":"永宁寺西","icon":"7","desc":"公共任务：击退徐啸。","order":0},{"id":33,"key":"c11","map":"楚州","type":"0","hour":0,"time":54,"stage":"闯入大营","site":"平陵丘西","icon":"6","desc":"公共任务：协助桑来照一同闯入军营内。","order":0}],"云从社":[{"id":36,"key":"y0","map":"银霜口","type":"1","hour":0,"time":0,"stage":"保全药田","site":"青牛谷","icon":"12","desc":"公共任务：教训夺药匪贼，收集已成熟药材。","order":0},{"id":57,"key":"y0","map":"银霜口","type":"1","hour":0,"time":6,"stage":"寒山钓客","site":"葫芦湖","icon":"301","desc":"公共任务：在葫芦湖附近使用“垂钓”技能钓取小霜鱼，上交给宁小霜。","order":0},{"id":58,"key":"y0","map":"银霜口","type":"1","hour":0,"time":12,"stage":"吞舟巨鳗","site":"葫芦湖","icon":"7","desc":"公共任务：击退葫芦湖巨鳗。","order":0},{"id":37,"key":"y0","map":"银霜口","type":"1","hour":0,"time":16,"stage":"堪舆密谋·平宵小","site":"葫芦湖北","icon":"7","desc":"公共任务：击退韩若冰。","order":0},{"id":38,"key":"y0","map":"银霜口","type":"1","hour":0,"time":20,"stage":"挟持威迫","site":"双峦洞","icon":"6","desc":"公共任务：解救被困的中原武人。","order":0},{"id":39,"key":"y0","map":"银霜口","type":"1","hour":0,"time":26,"stage":"膺惩恶首","site":"双峦洞","icon":"7","desc":"公共任务：清剿武家秘密据点。","order":0},{"id":40,"key":"y0","map":"银霜口","type":"1","hour":0,"time":30,"stage":"打理羊舍","site":"小青峰","icon":"8","desc":"公共任务：清理羊舍的粪便，或者给羊添加食物。","order":0},{"id":41,"key":"y0","map":"银霜口","type":"1","hour":0,"time":35,"stage":"堪舆密谋·诛外寇","site":"小青峰西","icon":"18","desc":"公共任务：驱逐暗行不轨的绳池剑宗弟子。","order":0},{"id":42,"key":"y0","map":"银霜口","type":"1","hour":0,"time":41,"stage":"堪舆密谋·破法阵","site":"双峦洞北","icon":"7","desc":"公共任务：击退崔之槐，破坏阵法。","order":0},{"id":43,"key":"y0","map":"银霜口","type":"1","hour":0,"time":55,"stage":"恶狼为祸","site":"小青峰","icon":"18","desc":"公共任务：击杀狼群。","order":0},{"id":44,"key":"y1","map":"银霜口","type":"1","hour":0,"time":1,"stage":"摸金倒斗","site":"秦氏祖墓","icon":"18","desc":"公共任务：击杀秦氏祖墓外的盗墓贼。","order":0},{"id":45,"key":"y1","map":"银霜口","type":"1","hour":0,"time":6,"stage":"扬武耀威","site":"秦氏祖墓南","icon":"7","desc":"公共任务：与刘细比武。","order":0},{"id":46,"key":"y1","map":"银霜口","type":"1","hour":0,"time":10,"stage":"香火遭劫","site":"秦氏祖墓东南","icon":"9","desc":"公共任务：护送物资车至道观。","order":0},{"id":47,"key":"y1","map":"银霜口","type":"1","hour":0,"time":18,"stage":"新仇旧恨","site":"凉天观东北","icon":"7","desc":"公共任务：击败解兰舟。","order":0},{"id":48,"key":"y1","map":"银霜口","type":"1","hour":0,"time":25,"stage":"因果循环","site":"瑶华峰北","icon":"301","desc":"公共任务：收集被香客放生的乌龟。","order":0},{"id":49,"key":"y1","map":"银霜口","type":"1","hour":0,"time":31,"stage":"松林凶影","site":"七返泉东","icon":"12","desc":"公共任务：镇压躁动不安的野猪。","order":0},{"id":50,"key":"y1","map":"银霜口","type":"1","hour":0,"time":37,"stage":"恶有恶报","site":"瑶华峰东","icon":"7","desc":"公共任务：击败张常心。","order":0},{"id":51,"key":"y1","map":"银霜口","type":"1","hour":0,"time":42,"stage":"豹据一方","site":"玉英谷","icon":"12","desc":"公共任务：击退雪原豹。","order":0},{"id":52,"key":"y1","map":"银霜口","type":"1","hour":0,"time":47,"stage":"患难与共","site":"玉英谷西北","icon":"6","desc":"公共任务：协助费大劲保护费大谷。","order":0},{"id":53,"key":"y8","map":"银霜口","type":"1","hour":2,"time":40,"stage":"恶斗争锋","site":"洞心坪","icon":"7","desc":"公共任务：击退雷阎。","order":0},{"id":55,"key":"y8","map":"银霜口","type":"1","hour":1,"time":41,"stage":"堪舆密谋·退敌首","site":"玉英谷","icon":"7","desc":"公共任务：击退韩清芒。","order":0},{"id":56,"key":"y8","map":"银霜口","type":"1","hour":3,"time":50,"stage":"护送药材","site":"青牛谷","icon":"9","desc":"公共任务：护送药材车。","order":0}],"披风会":[{"id":59,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":0,"stage":"游匪劫粮","site":"玄觉寺东南","icon":"381","desc":"击退游牧民族劫匪","order":0},{"id":73,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":0,"stage":"新劫掠者·一","site":"琼甲寨东","icon":"381","desc":"击退拔悉密部劫掠者","order":0},{"id":87,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":2,"stage":"劫农恶匪·一","site":"那云寨东","icon":"381","desc":"击退那云寨马匪","order":0},{"id":60,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":4,"stage":"守寺护经","site":"玄觉寺","icon":"382","desc":"击退扎西衮、阿咱热、拉吉佳协","order":0},{"id":74,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":4,"stage":"新劫掠者·二","site":"琼甲寨东","icon":"379","desc":"救治因保护货物而受伤的商队护卫","order":0},{"id":88,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":6,"stage":"劫农恶匪·二","site":"那云寨东","icon":"382","desc":"击退格朗","order":0},{"id":61,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":8,"stage":"墓陵引盗","site":"北丘墓","icon":"381","desc":"击退盗墓贼","order":0},{"id":75,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":8,"stage":"险途护航","site":"琼甲寨东南","icon":"384","desc":"护送商队前往伊吾城","order":0},{"id":89,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":10,"stage":"波旬恶众·一","site":"那云寨东北","icon":"381","desc":"击败波旬众，营救被囚禁的僧人","order":0},{"id":62,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":12,"stage":"并赃拿贼","site":"北丘墓","icon":"382","desc":"击退罗一空","order":0},{"id":90,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":14,"stage":"波旬恶众·二","site":"那云寨东北","icon":"382","desc":"击败波旬众首领魔罗","order":0},{"id":63,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":16,"stage":"淳朴民风","site":"高昌城","icon":"382","desc":"击败巴老九","order":0},{"id":91,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":18,"stage":"那云番众·一","site":"那云寨","icon":"381","desc":"击败那云寨马匪和菩提会番僧","order":0},{"id":76,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":18,"stage":"黑心贩子","site":"伊吾城东","icon":"381","desc":"教训恶劣的牲口贩子","order":0},{"id":64,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":22,"stage":"铁窗风味","site":"沸沙狱","icon":"379","desc":"给犯人放饭","order":0},{"id":92,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":22,"stage":"那云番众·二","site":"那云寨","icon":"382","desc":"击败那囊伍云","order":0},{"id":77,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":24,"stage":"心田疗愈","site":"伊吾城","icon":"379","desc":"跟知乐乐坊的客人聊天，让他们开心舒畅","order":0},{"id":65,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":26,"stage":"擒奸讨暴","site":"沸沙狱","icon":"382","desc":"击败凶恶的罪犯","order":0},{"id":78,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":26,"stage":"瓜田风波","site":"伊吾城南","icon":"379","desc":"帮助瓦塔洪除草除虫打理哈密瓜田","order":0},{"id":93,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":26,"stage":"伏击吐蕃","site":"那云寨西北","icon":"381","desc":"协助轶漠军伏击吐蕃士兵","order":0},{"id":94,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":30,"stage":"废土新生","site":"眺海村东","icon":"379","desc":"帮舍里克部族修建房屋","order":0},{"id":79,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":30,"stage":"小心“盐”","site":"陆盐池","icon":"380","desc":"帮盐场工人抵御来抢盐的“盐多必失帮”马匪","order":0},{"id":66,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":30,"stage":"保卫葡萄","site":"葡萄沟","icon":"382","desc":"击退库尔班","order":0},{"id":95,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":34,"stage":"保卫家园·一","site":"眺海村","icon":"381","desc":"帮舍里克部族击退劫掠的吐蕃劫匪","order":0},{"id":80,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":34,"stage":"层层扒皮·一","site":"星星峡西","icon":"379","desc":"披风会的指名委托单，请你到星星兰矿场挖矿","order":0},{"id":67,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":34,"stage":"塞上水贵","site":"葡萄沟","icon":"381","desc":"找出偷水的贼人，教训他们一顿","order":0},{"id":81,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":38,"stage":"层层扒皮·二","site":"星星峡西","icon":"381","desc":"击败星星兰矿场监工以保护被压榨的矿工","order":0},{"id":96,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":38,"stage":"保卫家园·二","site":"眺海村西南","icon":"378","desc":"击退野狼，上交狼皮给丹纳","order":0},{"id":68,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":38,"stage":"避行山隅","site":"不染窟","icon":"384","desc":"保护因洪灾转道天山北麓的商队","order":0},{"id":82,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":42,"stage":"层层扒皮·三","site":"星星峡西","icon":"382","desc":"教训星星兰矿场新上任的管事皮扒周","order":0},{"id":97,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":42,"stage":"愿者上钩","site":"眺海村西南","icon":"378","desc":"在该位置附近使用“垂钓”技能钓取七色鱼，上交给秋山雨。","order":0},{"id":69,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":44,"stage":"墓地穷途","site":"伊吾城西北","icon":"381","desc":"流匪来袭，帮守墓人驱逐流匪","order":0},{"id":98,"key":"p3","map":"河西瀚漠","type":"2","hour":2,"time":46,"stage":"浑水擒鼍","site":"眺海村西南","icon":"382","desc":"击退蒲昌海巨鳄","order":0},{"id":83,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":46,"stage":"沙蝰残众·一","site":"风砂旧垒","icon":"381","desc":"协助轶漠军清除沙蝰帮马匪","order":0},{"id":70,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":48,"stage":"古酒原料·一","site":"冰川宫西","icon":"378","desc":"浑天蓝请你去天山挖掘赛山草，然后交给他","order":0},{"id":84,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":50,"stage":"沙蝰残众·二","site":"风砂旧垒西北","icon":"382","desc":"击败沙蝰帮首领","order":0},{"id":71,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":52,"stage":"古酒原料·二","site":"冰川宫西","icon":"381","desc":"击败宋家巡山奴","order":0},{"id":85,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":54,"stage":"救治商贾","site":"祆舍西","icon":"379","desc":"救治被劫掠的商贾","order":0},{"id":72,"key":"p3","map":"河西瀚漠","type":"2","hour":0,"time":56,"stage":"古酒原料·三","site":"冰川宫西","icon":"382","desc":"击退宋氏商行天山总管宋和张","order":0},{"id":86,"key":"p3","map":"河西瀚漠","type":"2","hour":1,"time":58,"stage":"疏浚渠道","site":"敦煌城西","icon":"379","desc":"清理水渠淤泥","order":0}],"穹野卫":[{"id":114,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":0,"stage":"草坡徙羊","site":"白阳坡西北","icon":"384","desc":"护送牧民赶羊","order":0},{"id":106,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":0,"stage":"运送餐饭","site":"弓月城","icon":"379","desc":"给折罗曼护卫送吃食","order":0},{"id":100,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":3,"stage":"土行诡客","site":"杏花谷西","icon":"382","desc":"击退寅卯","order":0},{"id":107,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":4,"stage":"大公无私","site":"弓月城","icon":"379","desc":"参与弓月城内的纠纷裁决","order":0},{"id":115,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":8,"stage":"白猿袭人","site":"白阳坡西北","icon":"382","desc":"挑战！白猿·苍木尊者","order":0},{"id":126,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":9,"stage":"采蚌于河","site":"白山隘","icon":"378","desc":"在河边采集河蚌并上交至货物处","order":0},{"id":108,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":9,"stage":"舞动弓月","site":"弓月城","icon":"382","desc":"击败叱奴腾","order":0},{"id":127,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":13,"stage":"运蚌于途","site":"白山隘","icon":"384","desc":"跟随送粮队伍混进营地","order":0},{"id":116,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":14,"stage":"摩罗阴诡","site":"白阳坡东北","icon":"382","desc":"击退摩罗道鬼道旗主常诺","order":0},{"id":109,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":14,"stage":"清理书库","site":"弓月城","icon":"379","desc":"帮助骨勒打扫书库","order":0},{"id":128,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":17,"stage":"除患于厨","site":"白山隘","icon":"382","desc":"击败迦罗奢","order":0},{"id":131,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":19,"stage":"净海采药","site":"静海南","icon":"378","desc":"在净海采集伊丽川的净海紫草","order":0},{"id":117,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":20,"stage":"野蜂蜜香","site":"炽俟王帐北","icon":"378","desc":"收集蜂蜜","order":0},{"id":101,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":23,"stage":"重获自由","site":"燧云野","icon":"379","desc":"解救营帐内的奴隶","order":0},{"id":111,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":24,"stage":"炼以百花","site":"静海","icon":"382","desc":"击退百花夫人","order":0},{"id":123,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":24,"stage":"春牧酣饮","site":"炽俟王帐","icon":"379","desc":"参与春日庆典，饮下美酒与牧民一醉方休","order":0},{"id":103,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":29,"stage":"奋起反抗","site":"燧云野西","icon":"381","desc":"击退踏实力战士","order":0},{"id":118,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":29,"stage":"众乐而舞","site":"炽俟王帐西","icon":"379","desc":"和牧民一同跳舞","order":0},{"id":132,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":29,"stage":"净海试剑","site":"静海西","icon":"382","desc":"与赫连玉比武","order":0},{"id":104,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":33,"stage":"报仇雪恨","site":"燧云野西","icon":"382","desc":"击败铁都然","order":0},{"id":112,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":34,"stage":"净海垂钓","site":"静海","icon":"378","desc":"使用\"垂钓\"技能钓取净海白鲑，上交给秋山雨","order":0},{"id":119,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":34,"stage":"临河赛马","site":"炽俟王帐西","icon":"379","desc":"赛马：骑马经过指定点","order":0},{"id":124,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":38,"stage":"冰湖狂刀","site":"鹿眼湖","icon":"382","desc":"击败呼延绝","order":0},{"id":113,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":38,"stage":"海外来客","site":"静海","icon":"382","desc":"击退巨蟹","order":0},{"id":102,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":39,"stage":"水行青龙","site":"燧云野西","icon":"382","desc":"击退张法雷","order":0},{"id":129,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":43,"stage":"驰援商途","site":"燧云野西北","icon":"381","desc":"击退踏实力部劫匪，协助牧民寻回散落的物资。","order":0},{"id":110,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":43,"stage":"牧羊于野","site":"弓月城北","icon":"379","desc":"将羊赶至坡顶的大树旁","order":0},{"id":120,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":44,"stage":"恶徒衅众","site":"衣水原","icon":"382","desc":"击败西域神射手乌骨力","order":0},{"id":130,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":47,"stage":"贼首寻仇","site":"燧云野西北","icon":"382","desc":"击败莫贺都","order":0},{"id":133,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":48,"stage":"星宿突现","site":"弓月城北","icon":"382","desc":"打败星宿宗弟子陆栖云","order":0},{"id":121,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":49,"stage":"哮蛮之力","site":"衣水原北","icon":"381","desc":"和哮蛮勇士切磋","order":0},{"id":122,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":53,"stage":"熊哮山林","site":"衣水原北","icon":"382","desc":"和于勒都丝切磋","order":0},{"id":105,"key":"p3","map":"伊丽川","type":"3","hour":1,"time":53,"stage":"横冲直撞","site":"弓月城南","icon":"382","desc":"弓月城门口有一只牛疯了，快让它停下！","order":0},{"id":134,"key":"p3","map":"伊丽川","type":"3","hour":2,"time":53,"stage":"吐蕃来袭","site":"碛崖牧场","icon":"382","desc":"击退吐蕃先锋噶尔坚","order":0},{"id":99,"key":"p3","map":"伊丽川","type":"3","hour":0,"time":58,"stage":"谷中杂务","site":"杏花谷","icon":"379","desc":"协助杏花谷弟子清理马粪驱赶蚊虫","order":0}]};
 
@@ -1334,6 +1448,8 @@
         customExpanded: false,
         dataSource: 'fresh',   // 'fresh' | 'stale' | 'baseline'
         syncing: false,
+        reminders: {},         // key -> { key, stage, map, site, startAt }
+        reminderTimers: {},    // key -> setTimeout id
     };
 
     // ── 工具函数 ──────────────────────────────────────────
@@ -1412,6 +1528,9 @@
 
     /** 获取最佳可用本地数据（用于首屏 0ms 瞬间渲染） */
     function getBestLocalData(orgId) {
+        // 0. 规则型组织：无外部 API，直接按游戏规则生成（木鸢社）
+        const builder = STATIC_ORG_BUILDERS[orgId];
+        if (builder) return { data: builder(), source: 'static', ts: Date.now() };
         // 1. 优先新鲜缓存
         const fresh = getCached(orgId, false);
         if (fresh) return { data: fresh.data, source: 'fresh', ts: fresh.ts };
@@ -1428,6 +1547,9 @@
     /** 单个组织网络拉取（带超时与重试） */
     async function fetchOrg(orgId, retries = 2) {
         const cfg = ORG_CONFIG[orgId];
+        if (cfg.static) {
+            return { ok: true, data: STATIC_ORG_BUILDERS[orgId](), orgId };
+        }
         for (let i = 1; i <= retries; i++) {
             try {
                 const res = await fetch(API_BASE + cfg.type);
@@ -1495,7 +1617,8 @@
         if (state.syncing) return { allOk: false };
         state.syncing = true;
         try {
-            const results = await Promise.all(ORG_IDS.map(id => fetchOrg(id)));
+            const remoteIds = ORG_IDS.filter(id => !ORG_CONFIG[id].static);
+            const results = await Promise.all(remoteIds.map(id => fetchOrg(id)));
             const allOk = results.every(r => r.ok);
             const anyOk = results.some(r => r.ok);
 
@@ -1545,12 +1668,211 @@
         return `${pad(Math.floor(absolute / 60))}:${pad(absolute % 60)}`;
     }
 
+    function formatRemaining(totalSeconds) {
+        const seconds = Math.max(0, Math.floor(totalSeconds));
+        return `${pad(Math.floor(seconds / 60))}分${pad(seconds % 60)}秒`;
+    }
+
+    // ── 活动提醒（浏览器通知） ──────────────────────────────
+    function reminderKeyFor(a) {
+        return `${a.orgId}|${activityKey(a)}|${a.startAt || 0}`;
+    }
+
+    function saveReminders() {
+        safeStorageSet('jx3-renown-reminders', JSON.stringify(Object.values(state.reminders)));
+    }
+
+    function loadReminders() {
+        const raw = safeStorageGet('jx3-renown-reminders');
+        if (!raw) return;
+        try {
+            const arr = JSON.parse(raw);
+            if (!Array.isArray(arr)) return;
+            for (const item of arr) {
+                if (item && item.key && Number.isFinite(Number(item.startAt))) {
+                    state.reminders[item.key] = { ...item, startAt: Number(item.startAt) };
+                }
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    function restoreReminders() {
+        for (const [key, entry] of Object.entries(state.reminders)) {
+            if (entry.startAt > Date.now()) {
+                scheduleReminder(entry);
+            } else {
+                delete state.reminders[key];
+            }
+        }
+        saveReminders();
+    }
+
+    function cancelReminder(key) {
+        if (state.reminderTimers[key]) {
+            clearTimeout(state.reminderTimers[key]);
+            delete state.reminderTimers[key];
+        }
+        delete state.reminders[key];
+        saveReminders();
+    }
+
+    function scheduleReminder(entry) {
+        const key = entry.key;
+        if (state.reminderTimers[key]) {
+            clearTimeout(state.reminderTimers[key]);
+            delete state.reminderTimers[key];
+        }
+        const notifyAt = entry.startAt - 60 * 1000;
+        const delay = notifyAt - Date.now();
+        if (delay > 0) {
+            state.reminderTimers[key] = setTimeout(() => fireReminder(key), delay);
+            return;
+        }
+        // 距离开始已不足一分钟：立即提醒；已经完全开始则丢弃
+        if (entry.startAt > Date.now()) {
+            state.reminderTimers[key] = setTimeout(() => fireReminder(key), 80);
+        } else {
+            delete state.reminders[key];
+            saveReminders();
+        }
+    }
+
+    function fireReminder(key) {
+        const entry = state.reminders[key];
+        if (!entry) return;
+        cancelReminder(key);
+        const text = `${entry.stage} 1分钟后开始`;
+        const body = [entry.map, entry.site].filter(Boolean).join(' · ');
+        if (('Notification' in window) && Notification.permission === 'granted') {
+            try {
+                new Notification(text, { body, tag: key });
+            } catch (e) {
+                showToast(text, 'warning');
+            }
+        } else {
+            showToast(text, 'warning');
+        }
+        renderAll();
+    }
+
+    async function ensureNotificationPermission() {
+        if (!('Notification' in window)) {
+            showToast('当前浏览器不支持通知功能', 'warning');
+            return false;
+        }
+        if (Notification.permission === 'granted') return true;
+        if (Notification.permission === 'denied') {
+            showToast('通知权限已被拒绝，请在浏览器地址栏重新允许通知', 'warning');
+            return false;
+        }
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                showToast('未获得通知权限，无法设置提醒', 'warning');
+                return false;
+            }
+            return true;
+        } catch (e) {
+            showToast('通知权限申请失败，请检查浏览器设置', 'warning');
+            return false;
+        }
+    }
+
+    async function toggleReminder(btn) {
+        const key = btn.dataset.remindKey;
+        const startAt = Number(btn.dataset.startAt);
+        if (state.reminders[key]) {
+            cancelReminder(key);
+            renderAll();
+            showToast('已取消该活动提醒', 'success');
+            return;
+        }
+        if (!startAt || startAt <= Date.now()) {
+            showToast('该活动已开始，无法设置提醒', 'warning');
+            return;
+        }
+        const granted = await ensureNotificationPermission();
+        if (!granted) return;
+        const entry = {
+            key,
+            stage: btn.dataset.stage || '活动',
+            map: btn.dataset.map || '',
+            site: btn.dataset.site || '',
+            startAt,
+        };
+        state.reminders[key] = entry;
+        scheduleReminder(entry);
+        saveReminders();
+        renderAll();
+        showToast(`已设置提醒：${entry.stage} 1分钟前通知`, 'success');
+    }
+
+    /** 规则型组织（木鸢社）：按 duration 判定多条并行进行中的活动，而不只取最近一条 */
+    function getStaticOrgDisplay(orgId) {
+        const activities = state.activitiesByOrg[orgId] || [];
+        if (!activities.length) return [];
+
+        const cfg = ORG_CONFIG[orgId];
+        const now = getNow();
+        const baseMinuteMs = Math.floor(now.getTime() / 60000) * 60000;
+        const currentMinutes = nowMinutes();
+        const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const cycleSeconds = cfg.cycle * 60;
+        const currentOffsetSeconds = mod(currentSeconds, cycleSeconds);
+        const currentOffset = currentMinutes % cfg.cycle;
+        const results = [];
+
+        for (const a of activities) {
+            const elapsed = mod(currentOffset - a.cycleOffset, cfg.cycle);
+            const elapsedSeconds = mod(currentOffsetSeconds - a.cycleOffset * 60, cycleSeconds);
+            const duration = Number(a.duration) || 0;
+            const durationSeconds = duration * 60;
+            if (durationSeconds > 0 && elapsedSeconds < durationSeconds) {
+                const remainingSeconds = Math.max(0, durationSeconds - elapsedSeconds);
+                const maybeOverAfter = Number(a.maybeOverAfter) || 0;
+                const maybeOver = maybeOverAfter > 0 && elapsedSeconds >= maybeOverAfter * 60;
+                results.push({
+                    ...a,
+                    orgId,
+                    orgColor: cfg.color,
+                    isCurrent: true,
+                    maybeOver,
+                    maybeOverTitle: maybeOver ? (a.maybeOverTitle || '') : '',
+                    remainingSeconds,
+                    startAt: baseMinuteMs - elapsedSeconds * 1000,
+                    desc: maybeOver
+                        ? `${a.desc}（可能已被击杀，请尽快查看）`
+                        : a.desc,
+                    displayTime: formatDisplayTime(a.cycleOffset, currentMinutes, cfg.cycle, true),
+                    sortKey: (currentMinutes - elapsed) - 100000,
+                });
+                continue;
+            }
+            const dist = minutesUntil(a.cycleOffset, currentOffset, cfg.cycle);
+            if (dist > 0 && dist <= state.timeRange) {
+                results.push({
+                    ...a,
+                    orgId,
+                    orgColor: cfg.color,
+                    isCurrent: false,
+                    displayTime: formatDisplayTime(a.cycleOffset, currentMinutes, cfg.cycle, false),
+                    sortKey: dist,
+                    startAt: baseMinuteMs + dist * 60000,
+                });
+            }
+        }
+
+        return results;
+    }
+
     function getOrgDisplay(orgId) {
         const activities = state.activitiesByOrg[orgId] || [];
         if (!activities.length) return [];
 
         const cfg = ORG_CONFIG[orgId];
+        if (cfg.static) return getStaticOrgDisplay(orgId);
         const currentMinutes = nowMinutes();
+        const nowMs = Math.floor(getNow().getTime() / 60000) * 60000;
         const currentOffset = currentMinutes % cfg.cycle;
         const current = findCurrentActivity(activities, currentOffset);
 
@@ -1569,6 +1891,7 @@
                     isCurrent: true,
                     maybeOver: BOSS_ICONS.has(String(current.icon)) && elapsed >= BOSS_SAFE_MINUTES,
                     displayTime: formatDisplayTime(current.cycleOffset, currentMinutes, cfg.cycle, true),
+                    startAt: nowMs - elapsed * 60000,
                     sortKey: (() => {
                         let d = current.cycleOffset - currentOffset;
                         if (d > 0) d -= cfg.cycle;
@@ -1591,6 +1914,7 @@
                     isCurrent: false,
                     displayTime: formatDisplayTime(a.cycleOffset, currentMinutes, cfg.cycle, false),
                     sortKey: dist,
+                    startAt: nowMs + dist * 60000,
                 });
             }
         }
@@ -1654,7 +1978,7 @@
         if (!activities.length) {
             dom.tableBadge.textContent = '无结果';
             dom.tableBadge.className = 'badge badge-wait';
-            dom.tableBody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-search" style="display:block;font-size:1.5rem;margin-bottom:8px;"></i>当前时间范围内暂无匹配的活动排班</td></tr>`;
+            dom.tableBody.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fas fa-search" style="display:block;font-size:1.5rem;margin-bottom:8px;"></i>当前时间范围内暂无匹配的活动排班</td></tr>`;
             return;
         }
 
@@ -1674,11 +1998,27 @@
                 ? (a.maybeOver ? 'background: rgba(248, 113, 113, 0.055);' : 'background: rgba(240, 192, 96, 0.055);')
                 : '';
             const icon = renderIcon(a.icon);
-            // 时间数字永远排最前，进行中状态与图标紧随时间其后
+            const hasCountdown = Number.isFinite(Number(a.remainingSeconds)) && Number(a.remainingSeconds) > 0;
+            const remainingText = hasCountdown ? formatRemaining(Number(a.remainingSeconds)) : '';
+            const countdownEnd = hasCountdown ? Date.now() + Number(a.remainingSeconds) * 1000 : 0;
+            const countdownAttrs = hasCountdown
+                ? ` data-countdown-end="${countdownEnd}"`
+                : '';
+            const countdownHtml = hasCountdown
+                ? `<span class="time-countdown"${countdownAttrs}>${remainingText}</span>`
+                : '';
+            // 时间数字永远排最前，倒计时标签紧随时间其后
             const timeTag = a.isCurrent
                 ? (a.maybeOver
-                    ? '<span class="time-maybe-over" title="BOSS 型任务开战 2 分钟后可能已被击杀"><i class="fas fa-exclamation-triangle"></i>可能结束</span>'
-                    : '<span class="time-now-tag"><i class="fas fa-play-circle"></i>进行中</span>')
+                    ? `<span class="time-maybe-over" title="${escapeHtml(a.maybeOverTitle || 'BOSS 型任务开战 2 分钟后可能已被击杀')}"><i class="fas fa-exclamation-triangle"></i>可能结束</span>`
+                    : (hasCountdown
+                        ? `<span class="time-now-tag"><i class="fas fa-play-circle"></i>${countdownHtml}</span>`
+                        : '<span class="time-now-tag"><i class="fas fa-play-circle"></i>进行中</span>'))
+                : '';
+            const reminderKey = a.startAt ? reminderKeyFor(a) : '';
+            const isReminded = !!(reminderKey && state.reminders[reminderKey]);
+            const remindBtn = (!a.isCurrent && !state.customTime && a.startAt)
+                ? `<button type="button" class="remind-btn ${isReminded ? 'active' : ''}" data-remind-key="${escapeHtml(reminderKey)}" data-start-at="${a.startAt}" data-stage="${escapeHtml(a.stage || '')}" data-map="${escapeHtml(a.map || '')}" data-site="${escapeHtml(a.site || '')}" title="${isReminded ? '点击取消提醒' : '提前 1 分钟提醒'}"><i class="fa${isReminded ? 's' : 'r'} fa-bell"></i>${isReminded ? '已提醒' : '提醒'}</button>`
                 : '';
             return `
                 <tr style="${rowStyle}">
@@ -1697,6 +2037,7 @@
                     <td><strong>${escapeHtml(a.site || '-')}</strong></td>
                     <td>${icon}${escapeHtml(a.stage || '-')}</td>
                     <td style="color:var(--muted); font-size:0.84rem;">${escapeHtml(a.desc || '-')}</td>
+                    <td class="remind-cell">${remindBtn}</td>
                 </tr>`;
         }).join('');
 
@@ -1721,6 +2062,18 @@
         }
     }
 
+    /** 每秒刷新木鸢社进行中的「XX分XX秒后结束」标签（自定义测试时间下冻结） */
+    function tickCountdowns() {
+        if (state.customTime) return;
+        const now = Date.now();
+        document.querySelectorAll('.time-countdown[data-countdown-end]').forEach(el => {
+            const end = Number(el.getAttribute('data-countdown-end')) || 0;
+            if (!end) return;
+            const remain = Math.max(0, Math.ceil((end - now) / 1000));
+            el.textContent = formatRemaining(remain);
+        });
+    }
+
     function renderAll() {
         renderFilterChips();
         renderTable();
@@ -1731,6 +2084,7 @@
         safeStorageSet('jx3-renown-master-prefs', JSON.stringify({
             selectedOrgs: state.selectedOrgs,
             timeRange: state.timeRange,
+            prefsVersion: 2,
         }));
         safeStorageSet('jx3-renown-timetable-prefs', JSON.stringify({
             selectedOrgs: state.selectedOrgs,
@@ -1751,6 +2105,8 @@
                 const p = JSON.parse(raw);
                 if (Array.isArray(p.selectedOrgs)) {
                     const selected = p.selectedOrgs.filter(orgId => ORG_IDS.includes(orgId));
+                    // 旧版偏好中没有木鸢社：升级时默认补选，老用户无需手动勾选
+                    if (p.prefsVersion !== 2 && !selected.includes('木鸢社')) selected.unshift('木鸢社');
                     state.selectedOrgs = selected.length ? selected : [...ORG_IDS];
                 }
                 if (Number.isFinite(Number(p.timeRange))) {
@@ -1822,6 +2178,11 @@
             } finally {
                 btn.disabled = false;
             }
+        });
+
+        dom.tableBody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remind-btn');
+            if (btn) toggleReminder(btn);
         });
     }
 
@@ -2643,6 +3004,7 @@
     // ── 3. 初始化启动 ──────────────────────────────────────────
     async function boot() {
         loadPrefs();
+        loadReminders();
         renderFilterChips();
         bindTimetableEvents();
 
@@ -2657,8 +3019,10 @@
         // SWR 核心流：首屏 0ms 瞬间完成本地装填与呈现（告别白屏等待）
         const localStatus = loadInitialLocalData();
         renderAll();
+        restoreReminders();
         scheduleRefresh();
         setInterval(updateTimeDisplay, 1000);
+        setInterval(tickCountdowns, 1000);
 
         // 如果存在过期缓存或使用的是 Baseline 基准包，利用空闲时间后台静默探针同步
         if (localStatus.hasStale || localStatus.hasBaseline) {
