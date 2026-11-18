@@ -1243,7 +1243,7 @@
                 <div class="brand-meta">
                     <div class="brand-line">
                         <h1>剑网3名望大师</h1>
-                        <button type="button" class="version-pill" id="version-pill" title="软件版本：v1.4.2（点击查看更新日志）">v1.4.2</button>
+                        <button type="button" class="version-pill" id="version-pill" title="软件版本：v1.5.0（点击查看更新日志）">v1.5.0</button>
 
                     </div>
                     <div class="brand-sub">
@@ -1440,7 +1440,7 @@
         <!-- ====== Footer 底部署名 ====== -->
         <footer class="footer">
             <div class="ver">
-                <span class="brand-en">Jx3 Renown Master</span> v1.4.2 | 2026-11-16
+                <span class="brand-en">Jx3 Renown Master</span> v1.5.0 | 2026-11-19
             </div>
             <div class="copy">
                 &copy; 2026 凌千羽·龙争虎斗. All Rights Reserved.
@@ -1456,6 +1456,18 @@
     <!-- 内嵌更新日志 Markdown 源（与仓库 CHANGELOG.md 同步维护；由运行时解析器渲染到弹窗）-->
     <script type="text/markdown" id="changelog-source">
 # 📜 剑网3名望大师 更新日志
+
+---
+
+## v1.5.0 — 顶栏版本号点击查看更新日志 (2026-11-19)
+
+### ✨ 新增特性
+- **更新日志弹窗**：
+  - 顶栏软件版本号改为可点击按钮，点击弹出「更新日志」窗口（移植自 jx3-loot-forge 同款交互）。
+  - 支持范围筛选：最新版本（默认）/ 全部版本 / 按版本号精确查看；当前版本带「当前版本」徽章。
+  - 完整渲染仓库 `CHANGELOG.md` 的全部 15 个版本历史，支持 **粗体** 与 `行内代码`，全程无 HTML 注入风险。
+  - 下拉选项按按钮视口坐标定位，空间不足时自动向上展开，矮卡片场景（如 v1.0.9）不裁切。
+  - Esc / 关闭按钮 / 点击遮罩空白三种方式关闭；零构建依赖，离线双击直开同样可用。
 
 ---
 
@@ -1675,7 +1687,7 @@ v1.1.0 一言蔽之：**从绝对时间轴切换到相对偏移模型。**
 
     <script>
     /* ================================================================
-       Jx3 Renown Master (jx3-renown-master) v1.4.2
+       Jx3 Renown Master (jx3-renown-master) v1.5.0
        统一相对偏移时间模型 + 纯前端智能图像识别与 Flow 求解器
        © 2026 凌千羽·龙争虎斗
        ================================================================ */
@@ -1814,7 +1826,7 @@ v1.1.0 一言蔽之：**从绝对时间轴切换到相对偏移模型。**
         if (!node) return [];
         try { return parseChangelogMarkdown(node.textContent); } catch (e) { return []; }
     })();
-    const APP_VERSION = '1.4.2';
+    const APP_VERSION = '1.5.0';
 
     function openChangelogDialog() {
         // 幂等：已有弹窗则不重复创建

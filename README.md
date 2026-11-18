@@ -7,7 +7,7 @@
 名望排班实时追踪与解阵连线求解辅助工坊
 
 [![Online Demo](https://img.shields.io/badge/Online%20Demo-在线使用-f0c060.svg?style=flat-square)](https://cyt7732.github.io/jx3-renown-master/)
-[![Release](https://img.shields.io/badge/Release-v1.4.2-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
+[![Release](https://img.shields.io/badge/Release-v1.5.0-emerald.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master/releases)
 [![Platform](https://img.shields.io/badge/Platform-JX3%20旗舰端%20%2F%20缘起端-38bdf8.svg?style=flat-square)](https://jx3.xoyo.com)
 [![Offline Ready](https://img.shields.io/badge/Offline-100%25%20Single--File-blueviolet.svg?style=flat-square)](https://github.com/cyt7732/jx3-renown-master)
 
@@ -96,6 +96,13 @@ jx3-renown-master/
 - 图标：Font Awesome Free 6.4.0，遵循 CC BY 4.0 / SIL OFL 1.1 / MIT，详见 `LICENSE-FontAwesome.txt`
 
 ## 版本
+
+**v1.5.0** | 2026-11-19
+
+### 更新记录
+- **顶栏版本号点击查看更新日志**：版本号改为可点击按钮，弹出更新日志窗口，支持范围筛选与完整历史渲染。
+
+---
 
 **v1.4.2** | 2026-11-16
 
